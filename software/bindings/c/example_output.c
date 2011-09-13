@@ -34,7 +34,7 @@ int main() {
     // Set pin 0 on port a to output low
     io16_set_port_configuration(&io, 'a', 1 << 0, 'o', false);
 
-    // Set pin 0 and 7 on port a to output high
+    // Set pin 0 and 7 on port b to output high
     io16_set_port_configuration(&io, 'b', (1 << 0) | (1 << 7), 'o', true);
 
 	printf("Press ctrl+c to close\n");
