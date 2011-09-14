@@ -9,10 +9,13 @@ public class ExampleOutput {
 	// Note: To make the example code cleaner we do not handle exceptions. Exceptions you
 	//       might normally want to catch are described in the commnents below
 	public static void main(String args[]) throws Exception {
-		IPConnection ipcon = new IPConnection(host, port); // Create connection to brickd (Can throw IOException)
+		// Create connection to brickd
+		IPConnection ipcon = new IPConnection(host, port); // Can throw IOException
 
 		BrickletIO16 io16 = new BrickletIO16(UID); // Create device object
-		ipcon.addDevice(io16); // Add device to ip connection (Can throw IPConnection.TimeoutException)
+
+		// Add device to ip connection
+		ipcon.addDevice(io16); // Can throw IPConnection.TimeoutException
 		// Don't use device before it is added to a connection
 		
 
