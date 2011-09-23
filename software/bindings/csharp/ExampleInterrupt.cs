@@ -11,6 +11,7 @@ class Example
 	{
 		string interruptBinary = System.Convert.ToString(interruptMask, 2);
 		string valueBinary = System.Convert.ToString(valueMask, 2);
+
 		System.Console.WriteLine("Interrupt on port: " + port);
 		System.Console.WriteLine("Interrupt by: " + interruptBinary);
 		System.Console.WriteLine("Value: " + valueBinary);
