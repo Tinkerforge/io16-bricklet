@@ -5,8 +5,8 @@ HOST = "localhost"
 PORT = 4223
 UID = "XYZ" # Change to your UID
 
-from ip_connection import IPConnection
-from bricklet_io16 import IO16
+from tinkerforge.ip_connection import IPConnection
+from tinkerforge.bricklet_io16 import IO16
 
 # Callback function for interrupts
 def cb_interrupt(port, interrupt_mask, value_mask):
