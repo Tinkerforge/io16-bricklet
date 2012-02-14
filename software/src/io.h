@@ -184,7 +184,7 @@ void get_port_interrupt(uint8_t com, const GetPortInterrupt *data);
 void invocation(uint8_t com, uint8_t *data);
 void constructor(void);
 void destructor(void);
-void tick(void);
+void tick(uint8_t tick_type);
 
 void io_write(const uint8_t internal_address, uint8_t value);
 uint8_t io_read(const uint8_t internal_address);

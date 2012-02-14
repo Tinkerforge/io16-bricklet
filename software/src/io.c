@@ -23,6 +23,7 @@
 
 #include "brickletlib/bricklet_entry.h"
 #include "bricklib/utility/mutex.h"
+#include "bricklib/utility/init.h"
 #include "bricklib/bricklet/bricklet_communication.h"
 #include "config.h"
 #include <pio/pio_it.h>
@@ -81,45 +82,50 @@ void destructor(void) {
 	BA->PIO_Configure(&PIN_RESET, 1);
 }
 
-void tick(void) {
-	if(BC->port_a_counter == 0) {
-		if((PIN_INT_A.pio->PIO_PDSR & PIN_INT_A.mask) == 0) {
-			InterruptSignal is = {
-				BS->stack_id,
-				TYPE_INTERRUPT,
-				sizeof(InterruptSignal),
-				'a',
-				io_read(I2C_INTERNAL_ADDRESS_INTF_A),
-				io_read(I2C_INTERNAL_ADDRESS_GPIO_A)
-			};
-
-			BA->send_blocking_with_timeout(&is,
-										   sizeof(InterruptSignal),
-										   *BA->com_current);
-			BC->port_a_counter = BC->debounce_period;
+void tick(uint8_t tick_type) {
+	if(tick_type & TICK_TASK_TYPE_CALCULATION) {
+		if(BC->port_a_counter != 0) {
+			BC->port_a_counter--;
 		}
-	} else {
-		BC->port_a_counter--;
-	}
-
-	if(BC->port_b_counter == 0) {
-		if((PIN_INT_B.pio->PIO_PDSR & PIN_INT_B.mask) == 0) {
-			InterruptSignal is = {
-				BS->stack_id,
-				TYPE_INTERRUPT,
-				sizeof(InterruptSignal),
-				'b',
-				io_read(I2C_INTERNAL_ADDRESS_INTF_B),
-				io_read(I2C_INTERNAL_ADDRESS_GPIO_B)
-			};
-
-			BA->send_blocking_with_timeout(&is,
-										   sizeof(InterruptSignal),
-										   *BA->com_current);
-			BC->port_b_counter = BC->debounce_period;
+		if(BC->port_b_counter != 0) {
+			BC->port_b_counter--;
 		}
-	} else {
-		BC->port_b_counter--;
+	} else if(tick_type & TICK_TASK_TYPE_MESSAGE) {
+		if(BC->port_a_counter == 0) {
+			if((PIN_INT_A.pio->PIO_PDSR & PIN_INT_A.mask) == 0) {
+				InterruptSignal is = {
+					BS->stack_id,
+					TYPE_INTERRUPT,
+					sizeof(InterruptSignal),
+					'a',
+					io_read(I2C_INTERNAL_ADDRESS_INTF_A),
+					io_read(I2C_INTERNAL_ADDRESS_GPIO_A)
+				};
+
+				BA->send_blocking_with_timeout(&is,
+											   sizeof(InterruptSignal),
+											   *BA->com_current);
+				BC->port_a_counter = BC->debounce_period;
+			}
+		}
+
+		if(BC->port_b_counter == 0) {
+			if((PIN_INT_B.pio->PIO_PDSR & PIN_INT_B.mask) == 0) {
+				InterruptSignal is = {
+					BS->stack_id,
+					TYPE_INTERRUPT,
+					sizeof(InterruptSignal),
+					'b',
+					io_read(I2C_INTERNAL_ADDRESS_INTF_B),
+					io_read(I2C_INTERNAL_ADDRESS_GPIO_B)
+				};
+
+				BA->send_blocking_with_timeout(&is,
+											   sizeof(InterruptSignal),
+											   *BA->com_current);
+				BC->port_b_counter = BC->debounce_period;
+			}
+		}
 	}
 }
 
