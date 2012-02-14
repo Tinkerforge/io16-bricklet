@@ -90,7 +90,9 @@ void tick(uint8_t tick_type) {
 		if(BC->port_b_counter != 0) {
 			BC->port_b_counter--;
 		}
-	} else if(tick_type & TICK_TASK_TYPE_MESSAGE) {
+	}
+
+	if(tick_type & TICK_TASK_TYPE_MESSAGE) {
 		if(BC->port_a_counter == 0) {
 			if((PIN_INT_A.pio->PIO_PDSR & PIN_INT_A.mask) == 0) {
 				InterruptSignal is = {
