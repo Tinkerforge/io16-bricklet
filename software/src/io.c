@@ -95,37 +95,55 @@ void tick(uint8_t tick_type) {
 	if(tick_type & TICK_TASK_TYPE_MESSAGE) {
 		if(BC->port_a_counter == 0) {
 			if((PIN_INT_A.pio->PIO_PDSR & PIN_INT_A.mask) == 0) {
-				InterruptSignal is = {
-					BS->stack_id,
-					TYPE_INTERRUPT,
-					sizeof(InterruptSignal),
-					'a',
-					io_read(I2C_INTERNAL_ADDRESS_INTF_A),
-					io_read(I2C_INTERNAL_ADDRESS_GPIO_A)
-				};
+				uint8_t new_intf = io_read(I2C_INTERNAL_ADDRESS_INTF_A);
+				uint8_t new_gpio = io_read(I2C_INTERNAL_ADDRESS_GPIO_A);
+				if(new_intf != BC->port_a_last_intf ||
+				   (new_intf &
+				    new_gpio) != (BC->port_a_last_intf &
+				                  BC->port_a_last_gpio)) {
+					InterruptSignal is = {
+						BS->stack_id,
+						TYPE_INTERRUPT,
+						sizeof(InterruptSignal),
+						'a',
+						new_intf,
+						new_gpio
+					};
+					BC->port_a_last_intf = new_intf;
+					BC->port_a_last_gpio = new_gpio;
 
-				BA->send_blocking_with_timeout(&is,
-											   sizeof(InterruptSignal),
-											   *BA->com_current);
-				BC->port_a_counter = BC->debounce_period;
+					BA->send_blocking_with_timeout(&is,
+												   sizeof(InterruptSignal),
+												   *BA->com_current);
+					BC->port_a_counter = BC->debounce_period;
+				}
 			}
 		}
 
 		if(BC->port_b_counter == 0) {
 			if((PIN_INT_B.pio->PIO_PDSR & PIN_INT_B.mask) == 0) {
-				InterruptSignal is = {
-					BS->stack_id,
-					TYPE_INTERRUPT,
-					sizeof(InterruptSignal),
-					'b',
-					io_read(I2C_INTERNAL_ADDRESS_INTF_B),
-					io_read(I2C_INTERNAL_ADDRESS_GPIO_B)
-				};
+				uint8_t new_intf = io_read(I2C_INTERNAL_ADDRESS_INTF_B);
+				uint8_t new_gpio = io_read(I2C_INTERNAL_ADDRESS_GPIO_B);
+				if(new_intf != BC->port_b_last_intf ||
+				   (new_intf &
+				    new_gpio) != (BC->port_b_last_intf &
+				                  BC->port_b_last_gpio)) {
+					InterruptSignal is = {
+						BS->stack_id,
+						TYPE_INTERRUPT,
+						sizeof(InterruptSignal),
+						'b',
+						new_intf,
+						new_gpio
+					};
+					BC->port_b_last_intf = new_intf;
+					BC->port_b_last_gpio = new_gpio;
 
-				BA->send_blocking_with_timeout(&is,
-											   sizeof(InterruptSignal),
-											   *BA->com_current);
-				BC->port_b_counter = BC->debounce_period;
+					BA->send_blocking_with_timeout(&is,
+												   sizeof(InterruptSignal),
+												   *BA->com_current);
+					BC->port_b_counter = BC->debounce_period;
+				}
 			}
 		}
 	}

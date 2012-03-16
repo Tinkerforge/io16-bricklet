@@ -32,7 +32,7 @@
 #define BRICKLET_HARDWARE_NAME "IO-16 Bricklet 1.0"
 #define BRICKLET_FIRMWARE_VERSION_MAJOR 1
 #define BRICKLET_FIRMWARE_VERSION_MINOR 1
-#define BRICKLET_FIRMWARE_VERSION_REVISION 0
+#define BRICKLET_FIRMWARE_VERSION_REVISION 1
 
 #define INVOCATION_IN_BRICKLET_CODE
 
@@ -44,6 +44,10 @@ typedef struct {
 	uint32_t debounce_period;
 	uint32_t port_a_counter;
 	uint32_t port_b_counter;
+	uint8_t port_a_last_intf;
+	uint8_t port_b_last_intf;
+	uint8_t port_a_last_gpio;
+	uint8_t port_b_last_gpio;
 } BrickContext;
 
 #endif
