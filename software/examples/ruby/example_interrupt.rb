@@ -19,7 +19,7 @@ ipcon.add_device io16 # Add device to IP connection
 io16.set_port_interrupt 'a', 1 << 2
 
 # Register callback for interrupts
-io16.register_callback BrickletIO16::CALLBACK_INTERRUPT, do |port, interrupt_mask, value_mask|
+io16.register_callback(BrickletIO16::CALLBACK_INTERRUPT) do |port, interrupt_mask, value_mask|
   puts "Interrupt on port: #{port}"
   puts "Interrupt by: #{interrupt_mask.to_s 2}"
   puts "Value: #{value_mask.to_s 2}"
