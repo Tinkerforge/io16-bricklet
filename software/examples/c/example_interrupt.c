@@ -41,6 +41,7 @@ int main() {
 	// Register callback for interrupts
 	io16_register_callback(&io, IO16_CALLBACK_INTERRUPT, cb_interrupt);
 
-	printf("Press ctrl+c to close\n");
-	ipcon_join_thread(&ipcon); // Join mainloop of IP connection
+	printf("Press key to exit\n");
+	getchar();
+	ipcon_destroy(&ipcon);
 }

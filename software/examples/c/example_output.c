@@ -33,6 +33,7 @@ int main() {
 	// Set pin 0 and 7 on port b to output high
 	io16_set_port_configuration(&io, 'b', (1 << 0) | (1 << 7), 'o', true);
 
-	printf("Press ctrl+c to close\n");
-	ipcon_join_thread(&ipcon); // Join mainloop of IP connection
+	printf("Press key to exit\n");
+	getchar();
+	ipcon_destroy(&ipcon);
 }
