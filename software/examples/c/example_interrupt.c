@@ -15,7 +15,6 @@ void cb_interrupt(char port, uint8_t interrupt_mask, uint8_t value_mask) {
 	printf("Value: %d\n", value_mask);
 }
 
-
 int main() {
 	// Create IP connection to brickd
 	IPConnection ipcon;
@@ -35,11 +34,11 @@ int main() {
 	}
 	// Don't use device before it is added to a connection
 
-	// Enable interrupt on pin 2 of port a 
-	io16_set_port_interrupt(&io, 'a', 1 << 2),
-
 	// Register callback for interrupts
 	io16_register_callback(&io, IO16_CALLBACK_INTERRUPT, cb_interrupt);
+
+	// Enable interrupt on pin 2 of port a
+	io16_set_port_interrupt(&io, 'a', 1 << 2);
 
 	printf("Press key to exit\n");
 	getchar();

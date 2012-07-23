@@ -24,11 +24,11 @@ class Example
 		ipcon.AddDevice(io16); // Add device to IP connection
 		// Don't use device before it is added to a connection
 
-		// Enable interrupt on pin 2 of port a
-		io16.SetPortInterrupt('a', 1 << 2);
-
 		// Register callback for interrupts
 		io16.RegisterCallback(new BrickletIO16.Interrupt(InterruptCB));
+
+		// Enable interrupt on pin 2 of port a
+		io16.SetPortInterrupt('a', 1 << 2);
 
 		System.Console.WriteLine("Press key to exit");
 		System.Console.ReadKey();

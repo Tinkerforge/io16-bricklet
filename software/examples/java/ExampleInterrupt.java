@@ -17,9 +17,6 @@ public class ExampleInterrupt {
 		ipcon.addDevice(io16); // Can throw IPConnection.TimeoutException
 		// Don't use device before it is added to a connection
 
-		// Enable interrupt on pin 2 of port a
-		io16.setPortInterrupt('a', (short)(1 << 2));
-
 		// Add and implement listener for interrupt (called if pin 2 of port a changes)
 		io16.addListener(new BrickletIO16.InterruptListener() {
 			public void interrupt(char port, short interruptMask, short valueMask) {
@@ -28,6 +25,9 @@ public class ExampleInterrupt {
 				System.out.println("Value: " + Integer.toBinaryString(valueMask));
 			}
 		});
+
+		// Enable interrupt on pin 2 of port a
+		io16.setPortInterrupt('a', (short)(1 << 2));
 
 		System.console().readLine("Press key to exit\n");
 		ipcon.destroy();
