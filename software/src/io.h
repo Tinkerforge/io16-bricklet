@@ -1,4 +1,5 @@
 /* io16-bricklet
+ * Copyright (C) 2012 Matthias Bolte <matthias@tinkerforge.com>
  * Copyright (C) 2010-2011 Olaf Lüke <olaf@tinkerforge.com>
  *
  * io.h: Implementation of IO-16 Bricklet messages
@@ -63,8 +64,11 @@
 #define TYPE_SET_PORT_INTERRUPT 7
 #define TYPE_GET_PORT_INTERRUPT 8
 #define TYPE_INTERRUPT 9
+#define TYPE_SET_PORT_MONOFLOP 10
+#define TYPE_GET_PORT_MONOFLOP 11
+#define TYPE_MONOFLOP_DONE 12
 
-#define NUM_MESSAGES 8
+#define NUM_MESSAGES 11
 
 typedef struct {
 	uint8_t stack_id;
@@ -77,7 +81,7 @@ typedef struct {
 	uint8_t stack_id;
 	uint8_t type;
 	uint16_t length;
-	uint8_t port_mask;
+	uint8_t value_mask;
 } __attribute__((__packed__)) GetPortReturn;
 
 typedef struct {
@@ -85,7 +89,7 @@ typedef struct {
 	uint8_t type;
 	uint16_t length;
 	char port;
-	uint8_t port_mask;
+	uint8_t value_mask;
 } __attribute__((__packed__)) SetPort;
 
 typedef struct {
@@ -93,7 +97,7 @@ typedef struct {
 	uint8_t type;
 	uint16_t length;
 	char port;
-	uint8_t port_mask;
+	uint8_t pin_mask;
 	char direction;
 	bool value;
 } __attribute__((__packed__)) SetPortConfiguration;
@@ -168,6 +172,42 @@ typedef struct {
 	uint8_t stack_id;
 	uint8_t type;
 	uint16_t length;
+	char port;
+	uint8_t pin_mask;
+	uint8_t value_mask;
+	uint32_t time;
+} __attribute__((__packed__)) SetPortMonoflop;
+
+typedef struct {
+	uint8_t stack_id;
+	uint8_t type;
+	uint16_t length;
+	char port;
+	uint8_t pin;
+} __attribute__((__packed__)) GetPortMonoflop;
+
+typedef struct {
+	uint8_t stack_id;
+	uint8_t type;
+	uint16_t length;
+	uint8_t value;
+	uint32_t time;
+	uint32_t time_remaining;
+} __attribute__((__packed__)) GetPortMonoflopReturn;
+
+typedef struct {
+	uint8_t stack_id;
+	uint8_t type;
+	uint16_t length;
+	char port;
+	uint8_t pin_mask;
+	uint8_t value_mask;
+} __attribute__((__packed__)) MonoflopDone;
+
+typedef struct {
+	uint8_t stack_id;
+	uint8_t type;
+	uint16_t length;
 } __attribute__((__packed__)) StandardMessage;
 
 void get_port(uint8_t com, const GetPort *data);
@@ -178,8 +218,8 @@ void set_debounce_period(uint8_t com, const SetDebouncePeriod *data);
 void get_debounce_period(uint8_t com, const GetDebouncePeriod *data);
 void set_port_interrupt(uint8_t com, const SetPortInterrupt *data);
 void get_port_interrupt(uint8_t com, const GetPortInterrupt *data);
-
-
+void set_port_monoflop(uint8_t com, SetPortMonoflop *data);
+void get_port_monoflop(uint8_t com, GetPortMonoflop *data);
 
 void invocation(uint8_t com, uint8_t *data);
 void constructor(void);
