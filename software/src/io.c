@@ -127,26 +127,37 @@ void send_interrupt_callback(char port,
 void update_monoflop_time(uint8_t internal_address_olat,
                           uint8_t *monoflop_callback_mask,
                           uint32_t **time_remaining) {
-	uint8_t gpio = io_read(internal_address_olat);
-	uint8_t last_monoflop_callback_mask = *monoflop_callback_mask;
+	uint8_t monoflop_done_mask = 0;
 
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
 		if((*time_remaining)[i] != 0) {
 			(*time_remaining)[i]--;
+
 			if((*time_remaining)[i] == 0) {
-				if(gpio & (1 << i)) {
-					gpio &= ~(1 << i);
-				} else {
-					gpio |= (1 << i);
-				}
-				*monoflop_callback_mask |= (1 << i);
+				monoflop_done_mask |= (1 << i);
 			}
 		}
 	}
 
-	if(*monoflop_callback_mask != last_monoflop_callback_mask) {
-		io_write(internal_address_olat , gpio);
+	if (monoflop_done_mask == 0) {
+		return;
 	}
+
+	uint8_t gpio = io_read(internal_address_olat);
+
+	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
+		if(monoflop_done_mask & (1 << i)) {
+			if(gpio & (1 << i)) {
+				gpio &= ~(1 << i);
+			} else {
+				gpio |= (1 << i);
+			}
+		}
+	}
+
+	io_write(internal_address_olat, gpio);
+
+	*monoflop_callback_mask |= monoflop_done_mask;
 }
 
 void send_monoflop_callback(char port,

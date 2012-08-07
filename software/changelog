@@ -2,3 +2,4 @@
 1.1.0: Add support for tick types
 1.1.1: Save and compare last interrupt (for better bounce detection)
 1.1.2: Add monoflop functionality
+1.1.3: Avoid useless I2C reads during monoflop handling
