@@ -1,6 +1,6 @@
 /* io16-bricklet
  * Copyright (C) 2012 Matthias Bolte <matthias@tinkerforge.com>
- * Copyright (C) 2010-2011 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2010-2012 Olaf Lüke <olaf@tinkerforge.com>
  *
  * io.h: Implementation of IO-16 Bricklet messages
  *
@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 
+#include "bricklib/com/com_common.h"
 
 #define I2C_EEPROM_ADDRESS_HIGH 84
 #define I2C_ADDRESS_HIGH 33 //0b0100001
@@ -55,47 +56,39 @@
 
 #define IOCON_ODR                      (1 << 2)
 
-#define TYPE_SET_PORT 1
-#define TYPE_GET_PORT 2
-#define TYPE_SET_PORT_CONFIGURATION 3
-#define TYPE_GET_PORT_CONFIGURATION 4
-#define TYPE_SET_DEBOUNCE_PERIOD 5
-#define TYPE_GET_DEBOUNCE_PERIOD 6
-#define TYPE_SET_PORT_INTERRUPT 7
-#define TYPE_GET_PORT_INTERRUPT 8
-#define TYPE_INTERRUPT 9
-#define TYPE_SET_PORT_MONOFLOP 10
-#define TYPE_GET_PORT_MONOFLOP 11
-#define TYPE_MONOFLOP_DONE 12
+#define FID_SET_PORT 1
+#define FID_GET_PORT 2
+#define FID_SET_PORT_CONFIGURATION 3
+#define FID_GET_PORT_CONFIGURATION 4
+#define FID_SET_DEBOUNCE_PERIOD 5
+#define FID_GET_DEBOUNCE_PERIOD 6
+#define FID_SET_PORT_INTERRUPT 7
+#define FID_GET_PORT_INTERRUPT 8
+#define FID_INTERRUPT 9
+#define FID_SET_PORT_MONOFLOP 10
+#define FID_GET_PORT_MONOFLOP 11
+#define FID_MONOFLOP_DONE 12
 
 #define NUM_MESSAGES 11
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	char port;
 } __attribute__((__packed__)) GetPort;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	uint8_t value_mask;
 } __attribute__((__packed__)) GetPortReturn;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	char port;
 	uint8_t value_mask;
 } __attribute__((__packed__)) SetPort;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	char port;
 	uint8_t pin_mask;
 	char direction;
@@ -103,75 +96,55 @@ typedef struct {
 } __attribute__((__packed__)) SetPortConfiguration;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	char port;
 } __attribute__((__packed__)) GetPortConfiguration;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	uint8_t direction_mask;
 	uint8_t value_mask;
 } __attribute__((__packed__)) GetPortConfigurationReturn;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	uint32_t debounce;
 } __attribute__((__packed__)) SetDebouncePeriod;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 } __attribute__((__packed__)) GetDebouncePeriod;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	uint32_t debounce;
 } __attribute__((__packed__)) GetDebouncePeriodReturn;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	char port;
 	uint8_t interrupt_mask;
 } __attribute__((__packed__)) SetPortInterrupt;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	char port;
 } __attribute__((__packed__)) GetPortInterrupt;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	uint8_t interrupt_mask;
 } __attribute__((__packed__)) GetPortInterruptReturn;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	char port;
 	uint8_t interrupt_mask;
 	uint8_t value_mask;
 } __attribute__((__packed__)) InterruptSignal;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	char port;
 	uint8_t pin_mask;
 	uint8_t value_mask;
@@ -179,54 +152,46 @@ typedef struct {
 } __attribute__((__packed__)) SetPortMonoflop;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	char port;
 	uint8_t pin;
 } __attribute__((__packed__)) GetPortMonoflop;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	uint8_t value;
 	uint32_t time;
 	uint32_t time_remaining;
 } __attribute__((__packed__)) GetPortMonoflopReturn;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 	char port;
 	uint8_t pin_mask;
 	uint8_t value_mask;
 } __attribute__((__packed__)) MonoflopDone;
 
 typedef struct {
-	uint8_t stack_id;
-	uint8_t type;
-	uint16_t length;
+	MessageHeader header;
 } __attribute__((__packed__)) StandardMessage;
 
-void get_port(uint8_t com, const GetPort *data);
-void set_port(uint8_t com, const SetPort *data);
-void set_port_configuration(uint8_t com, const SetPortConfiguration *data);
-void get_port_configuration(uint8_t com, const GetPortConfiguration *data);
-void set_debounce_period(uint8_t com, const SetDebouncePeriod *data);
-void get_debounce_period(uint8_t com, const GetDebouncePeriod *data);
-void set_port_interrupt(uint8_t com, const SetPortInterrupt *data);
-void get_port_interrupt(uint8_t com, const GetPortInterrupt *data);
-void set_port_monoflop(uint8_t com, SetPortMonoflop *data);
-void get_port_monoflop(uint8_t com, GetPortMonoflop *data);
+void get_port(const ComType com, const GetPort *data);
+void set_port(const ComType com, const SetPort *data);
+void set_port_configuration(const ComType com, const SetPortConfiguration *data);
+void get_port_configuration(const ComType com, const GetPortConfiguration *data);
+void set_debounce_period(const ComType com, const SetDebouncePeriod *data);
+void get_debounce_period(const ComType com, const GetDebouncePeriod *data);
+void set_port_interrupt(const ComType com, const SetPortInterrupt *data);
+void get_port_interrupt(const ComType com, const GetPortInterrupt *data);
+void set_port_monoflop(const ComType com, const SetPortMonoflop *data);
+void get_port_monoflop(const ComType com, const GetPortMonoflop *data);
 
-void invocation(uint8_t com, uint8_t *data);
+void invocation(const ComType com, const uint8_t *data);
 void constructor(void);
 void destructor(void);
-void tick(uint8_t tick_type);
+void tick(const uint8_t tick_type);
 
-void io_write(const uint8_t internal_address, uint8_t value);
+void io_write(const uint8_t internal_address, const uint8_t value);
 uint8_t io_read(const uint8_t internal_address);
 
 #endif
