@@ -10,11 +10,11 @@ $host = 'localhost';
 $port = 4223;
 $uid = '6VJ'; // Change to your UID
 
-$ipcon = new IPConnection($host, $port); // Create IP connection to brickd
-$io16 = new BrickletIO16($uid); // Create device object
+$ipcon = new IPConnection(); // Create IP connection
+$io16 = new BrickletIO16($uid, $ipcon); // Create device object
 
-$ipcon->addDevice($io16); // Add device to IP connection
-// Don't use device before it is added to a connection
+$ipcon->connect($host, $port); // Connect to brickd
+// Don't use device before ipcon is connected
 
 // Set pin 0 on port a to output low
 $io16->setPortConfiguration('a', 1 << 0, 'o', FALSE);
@@ -24,6 +24,5 @@ $io16->setPortConfiguration('b', (1 << 0) | (1 << 7), 'o', TRUE);
 
 echo "Press key to exit\n";
 fgetc(fopen('php://stdin', 'r'));
-$ipcon->destroy();
 
 ?>
