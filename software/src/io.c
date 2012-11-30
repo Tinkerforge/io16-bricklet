@@ -334,7 +334,7 @@ void get_port(const ComType com, const GetPort *data) {
 	} else if(data->port == 'b' || data->port == 'B') {
 		internal_address = I2C_INTERNAL_ADDRESS_GPIO_B;
 	} else {
-		BA->com_return_error(data, com, MESSAGE_ERROR_CODE_INVALID_PARAMETER, sizeof(MessageHeader));
+		BA->com_return_error(data, sizeof(GetPortReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
@@ -360,7 +360,7 @@ void set_port(const ComType com, const SetPort *data) {
 		internal_address = I2C_INTERNAL_ADDRESS_OLAT_B;
 		time_remaining = BC->port_b_time_remaining;
 	} else {
-		BA->com_return_error(data, com, MESSAGE_ERROR_CODE_INVALID_PARAMETER, sizeof(MessageHeader));
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
@@ -390,7 +390,7 @@ void set_port_configuration(const ComType com, const SetPortConfiguration *data)
 		internal_address_olat  = I2C_INTERNAL_ADDRESS_OLAT_B;
 		time_remaining = BC->port_b_time_remaining;
 	} else {
-		BA->com_return_error(data, com, MESSAGE_ERROR_CODE_INVALID_PARAMETER, sizeof(MessageHeader));
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
@@ -421,7 +421,7 @@ void set_port_configuration(const ComType com, const SetPortConfiguration *data)
 		iodir &= ~(data->pin_mask);
 		io_write(internal_address_iodir, iodir);
 	} else {
-		BA->com_return_error(data, com, MESSAGE_ERROR_CODE_INVALID_PARAMETER, sizeof(MessageHeader));
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
@@ -448,7 +448,7 @@ void get_port_configuration(const ComType com, const GetPortConfiguration *data)
 		internal_address_gppu  = I2C_INTERNAL_ADDRESS_GPPU_B;
 		internal_address_olat  = I2C_INTERNAL_ADDRESS_OLAT_B;
 	} else {
-		BA->com_return_error(data, com, MESSAGE_ERROR_CODE_INVALID_PARAMETER, sizeof(MessageHeader));
+		BA->com_return_error(data, sizeof(GetPortConfigurationReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
@@ -489,7 +489,7 @@ void set_port_interrupt(const ComType com, const SetPortInterrupt *data) {
 	} else if(data->port == 'b' || data->port == 'B') {
 		internal_address_gpinten = I2C_INTERNAL_ADDRESS_GPINTEN_B;
 	} else {
-		BA->com_return_error(data, com, MESSAGE_ERROR_CODE_INVALID_PARAMETER, sizeof(MessageHeader));
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
@@ -505,7 +505,7 @@ void get_port_interrupt(const ComType com, const GetPortInterrupt *data) {
 	} else if(data->port == 'b' || data->port == 'B') {
 		internal_address_gpinten = I2C_INTERNAL_ADDRESS_GPINTEN_B;
 	} else {
-		BA->com_return_error(data, com, MESSAGE_ERROR_CODE_INVALID_PARAMETER, sizeof(MessageHeader));
+		BA->com_return_error(data, sizeof(GetPortInterruptReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
@@ -535,7 +535,7 @@ void set_port_monoflop(const ComType com, const SetPortMonoflop *data) {
 		time = BC->port_b_time;
 		time_remaining = BC->port_b_time_remaining;
 	} else {
-		BA->com_return_error(data, com, MESSAGE_ERROR_CODE_INVALID_PARAMETER, sizeof(MessageHeader));
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
@@ -573,12 +573,12 @@ void get_port_monoflop(const ComType com, const GetPortMonoflop *data) {
 		time = BC->port_b_time;
 		time_remaining = BC->port_b_time_remaining;
 	} else {
-		BA->com_return_error(data, com, MESSAGE_ERROR_CODE_INVALID_PARAMETER, sizeof(MessageHeader));
+		BA->com_return_error(data, sizeof(GetPortMonoflopReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
 	if(data->pin >= NUM_PINS_PER_PORT) {
-		BA->com_return_error(data, com, MESSAGE_ERROR_CODE_INVALID_PARAMETER, sizeof(MessageHeader));
+		BA->com_return_error(data, sizeof(GetPortMonoflopReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
