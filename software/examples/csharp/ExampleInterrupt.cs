@@ -7,7 +7,7 @@ class Example
 	private static string UID = "ABC"; // Change to your UID
 
 	// Callback function for interrupts
-	static void InterruptCB(char port, byte interruptMask, byte valueMask)
+	static void InterruptCB(object sender, char port, byte interruptMask, byte valueMask)
 	{
 		string interruptBinary = System.Convert.ToString(interruptMask, 2);
 		string valueBinary = System.Convert.ToString(valueMask, 2);
@@ -19,19 +19,19 @@ class Example
 
 	static void Main() 
 	{
-		IPConnection ipcon = new IPConnection(HOST, PORT); // Create connection to brickd
-		BrickletIO16 io16 = new BrickletIO16(UID); // Create device object
-		ipcon.AddDevice(io16); // Add device to IP connection
-		// Don't use device before it is added to a connection
+		IPConnection ipcon = new IPConnection(); // Create IP connection
+		BrickletIO16 io16 = new BrickletIO16(UID, ipcon); // Create device object
+
+		ipcon.Connect(HOST, PORT); // Connect to brickd
+		// Don't use device before ipcon is connected
 
 		// Register callback for interrupts
-		io16.RegisterCallback(new BrickletIO16.Interrupt(InterruptCB));
+		io16.Interrupt += InterruptCB;
 
 		// Enable interrupt on pin 2 of port a
 		io16.SetPortInterrupt('a', 1 << 2);
 
 		System.Console.WriteLine("Press key to exit");
 		System.Console.ReadKey();
-		ipcon.Destroy();
 	}
 }

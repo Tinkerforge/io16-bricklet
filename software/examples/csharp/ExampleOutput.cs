@@ -8,10 +8,11 @@ class Example
 
 	static void Main() 
 	{
-		IPConnection ipcon = new IPConnection(HOST, PORT); // Create connection to brickd
-		BrickletIO16 io16 = new BrickletIO16(UID); // Create device object
-		ipcon.AddDevice(io16); // Add device to IP connection
-		// Don't use device before it is added to a connection
+		IPConnection ipcon = new IPConnection(); // Create IP connection
+		BrickletIO16 io16 = new BrickletIO16(UID, ipcon); // Create device object
+
+		ipcon.Connect(HOST, PORT); // Connect to brickd
+		// Don't use device before ipcon is connected
 
 		// Set pin 0 on port a to output low
 		io16.SetPortConfiguration('a', 1 << 0, 'o', false);
@@ -21,6 +22,5 @@ class Example
 
 		System.Console.WriteLine("Press key to exit");
 		System.Console.ReadKey();
-		ipcon.Destroy();
 	}
 }
