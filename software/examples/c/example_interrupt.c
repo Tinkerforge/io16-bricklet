@@ -10,6 +10,8 @@
 
 // Callback function for interrupts
 void cb_interrupt(char port, uint8_t interrupt_mask, uint8_t value_mask, void *user_data) {
+	(void)user_data; // avoid unused parameter warning
+
 	printf("Interrupt on port: %c\n", port);
 	printf("Interrupt by: %d\n", interrupt_mask);
 	printf("Value: %d\n", value_mask);
@@ -32,10 +34,10 @@ int main() {
 	// Don't use device before ipcon is connected
 
 	// Register callback for interrupts
-	io16_register_callback(&io, 
-	                       IO16_CALLBACK_INTERRUPT, 
-						   cb_interrupt,
-						   NULL);
+	io16_register_callback(&io,
+	                       IO16_CALLBACK_INTERRUPT,
+	                       cb_interrupt,
+	                       NULL);
 
 	// Enable interrupt on pin 2 of port a
 	io16_set_port_interrupt(&io, 'a', 1 << 2);
