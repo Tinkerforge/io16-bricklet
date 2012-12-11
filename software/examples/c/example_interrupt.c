@@ -36,7 +36,7 @@ int main() {
 	// Register callback for interrupts
 	io16_register_callback(&io,
 	                       IO16_CALLBACK_INTERRUPT,
-	                       cb_interrupt,
+	                       (void *)cb_interrupt,
 	                       NULL);
 
 	// Enable interrupt on pin 2 of port a
