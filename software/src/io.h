@@ -1,6 +1,6 @@
 /* io16-bricklet
  * Copyright (C) 2012 Matthias Bolte <matthias@tinkerforge.com>
- * Copyright (C) 2010-2012 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2010-2013 Olaf Lüke <olaf@tinkerforge.com>
  *
  * io.h: Implementation of IO-16 Bricklet messages
  *
@@ -68,8 +68,7 @@
 #define FID_SET_PORT_MONOFLOP 10
 #define FID_GET_PORT_MONOFLOP 11
 #define FID_MONOFLOP_DONE 12
-
-#define NUM_MESSAGES 11
+#define FID_SET_SELECTED_VALUES 13
 
 typedef struct {
 	MessageHeader header;
@@ -90,7 +89,7 @@ typedef struct {
 typedef struct {
 	MessageHeader header;
 	char port;
-	uint8_t pin_mask;
+	uint8_t selection_mask;
 	char direction;
 	bool value;
 } __attribute__((__packed__)) SetPortConfiguration;
@@ -146,7 +145,7 @@ typedef struct {
 typedef struct {
 	MessageHeader header;
 	char port;
-	uint8_t pin_mask;
+	uint8_t selection_mask;
 	uint8_t value_mask;
 	uint32_t time;
 } __attribute__((__packed__)) SetPortMonoflop;
@@ -167,7 +166,14 @@ typedef struct {
 typedef struct {
 	MessageHeader header;
 	char port;
-	uint8_t pin_mask;
+	uint8_t selection_mask;
+	uint8_t value_mask;
+} __attribute__((__packed__)) SetSelectedValues;
+
+typedef struct {
+	MessageHeader header;
+	char port;
+	uint8_t selection_mask;
 	uint8_t value_mask;
 } __attribute__((__packed__)) MonoflopDone;
 
@@ -185,6 +191,7 @@ void set_port_interrupt(const ComType com, const SetPortInterrupt *data);
 void get_port_interrupt(const ComType com, const GetPortInterrupt *data);
 void set_port_monoflop(const ComType com, const SetPortMonoflop *data);
 void get_port_monoflop(const ComType com, const GetPortMonoflop *data);
+void set_selected_values(const ComType com, const SetSelectedValues *data);
 
 void invocation(const ComType com, const uint8_t *data);
 void constructor(void);

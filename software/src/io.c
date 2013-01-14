@@ -1,6 +1,6 @@
 /* io16-bricklet
  * Copyright (C) 2012 Matthias Bolte <matthias@tinkerforge.com>
- * Copyright (C) 2010-2012 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2010-2013 Olaf Lüke <olaf@tinkerforge.com>
  *
  * io.c: Implementation of IO-16 Bricklet messages
  *
@@ -201,15 +201,15 @@ void send_monoflop_callback(const char port,
 	MonoflopDone md;
 	BA->com_make_default_header(&md, BS->uid, sizeof(MonoflopDone), FID_MONOFLOP_DONE);
 
-	md.port       = port;
-	md.pin_mask   = 0;
-	md.value_mask = 0;
+	md.port           = port;
+	md.selection_mask = 0;
+	md.value_mask     = 0;
 
 	uint8_t gpio = io_read(internal_address_gpio);
 
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
 		if (*monoflop_callback_mask & (1 << i)) {
-			md.pin_mask |= (1 << i);
+			md.selection_mask |= (1 << i);
 
 			if(gpio & (1 << i)) {
 				md.value_mask |= (1 << i);
@@ -398,27 +398,27 @@ void set_port_configuration(const ComType com, const SetPortConfiguration *data)
 
 	if(data->direction == 'i' || data->direction == 'I') {
 		iodir = io_read(internal_address_iodir);
-		iodir |= data->pin_mask;
+		iodir |= data->selection_mask;
 		io_write(internal_address_iodir, iodir);
 
 		uint8_t gppu = io_read(internal_address_gppu);
 		if(data->value) {
-			gppu |= data->pin_mask;
+			gppu |= data->selection_mask;
 		} else {
-			gppu &= ~(data->pin_mask);
+			gppu &= ~(data->selection_mask);
 		}
 		io_write(internal_address_gppu, gppu);
 	} else if(data->direction == 'o' || data->direction == 'O') {
 		uint8_t gpio = io_read(internal_address_olat);
 		if(data->value) {
-			gpio |= data->pin_mask;
+			gpio |= data->selection_mask;
 		} else {
-			gpio &= ~(data->pin_mask);
+			gpio &= ~(data->selection_mask);
 		}
 		io_write(internal_address_olat, gpio);
 
 		iodir = io_read(internal_address_iodir);
-		iodir &= ~(data->pin_mask);
+		iodir &= ~(data->selection_mask);
 		io_write(internal_address_iodir, iodir);
 	} else {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
@@ -426,7 +426,7 @@ void set_port_configuration(const ComType com, const SetPortConfiguration *data)
 	}
 
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
-		if (data->pin_mask & (1 << i)) {
+		if (data->selection_mask & (1 << i)) {
 			time_remaining[i] = 0;
 		}
 	}
@@ -543,7 +543,7 @@ void set_port_monoflop(const ComType com, const SetPortMonoflop *data) {
 	uint8_t gpio = io_read(internal_address_olat);
 
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
-		if((data->pin_mask & (1 << i)) && (direction_mask & (1 << i)) == 0) {
+		if((data->selection_mask & (1 << i)) && (direction_mask & (1 << i)) == 0) {
 			if(data->value_mask & (1 << i)) {
 				gpio |= (1 << i);
 			} else {
@@ -591,4 +591,36 @@ void get_port_monoflop(const ComType com, const GetPortMonoflop *data) {
 	gpmr.time_remaining = time_remaining[data->pin];
 
 	BA->send_blocking_with_timeout(&gpmr, sizeof(GetPortMonoflopReturn), com);
+}
+
+void set_selected_values(const ComType com, const SetSelectedValues *data) {
+	uint8_t internal_address;
+	uint32_t *time_remaining;
+
+	if(data->port == 'a' || data->port == 'A') {
+		internal_address = I2C_INTERNAL_ADDRESS_OLAT_A;
+		time_remaining = BC->port_a_time_remaining;
+	} else if(data->port == 'b' || data->port == 'B') {
+		internal_address = I2C_INTERNAL_ADDRESS_OLAT_B;
+		time_remaining = BC->port_b_time_remaining;
+	} else {
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+		return;
+	}
+
+	uint8_t gpio = io_read(internal_address);
+	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
+		if(data->selection_mask & (1 << i)) {
+			time_remaining[i] = 0;
+			if(data->value_mask & (1 << i)) {
+				gpio |= 1 << i;
+			} else {
+				gpio &= ~(1 << i);
+			}
+		}
+	}
+
+	io_write(internal_address, gpio);
+
+	BA->com_return_setter(com, data);
 }
