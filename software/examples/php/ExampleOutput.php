@@ -24,5 +24,6 @@ $io16->setPortConfiguration('b', (1 << 0) | (1 << 7), 'o', TRUE);
 
 echo "Press key to exit\n";
 fgetc(fopen('php://stdin', 'r'));
+$ipcon->disconnect();
 
 ?>

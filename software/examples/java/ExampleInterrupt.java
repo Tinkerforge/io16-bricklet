@@ -28,5 +28,6 @@ public class ExampleInterrupt {
 		io16.setPortInterrupt('a', (short)(1 << 2));
 
 		System.console().readLine("Press key to exit\n");
+		ipcon.disconnect();
 	}
 }

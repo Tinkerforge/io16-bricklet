@@ -22,5 +22,6 @@ public class ExampleOutput {
 		io16.setPortConfiguration('b', (short)((1 << 0) | (1 << 7)), 'o', true);
 
 		System.console().readLine("Press key to exit\n");
+		ipcon.disconnect();
 	}
 }

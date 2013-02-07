@@ -24,3 +24,4 @@ io16.set_port_configuration 'b', (1 << 0) | (1 << 7), 'o', false
 
 puts 'Press key to exit'
 $stdin.gets
+ipcon.disconnect

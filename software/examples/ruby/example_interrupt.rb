@@ -28,3 +28,4 @@ io16.set_port_interrupt 'a', 1 << 2
 
 puts 'Press key to exit'
 $stdin.gets
+ipcon.disconnect

@@ -28,3 +28,4 @@ if __name__ == "__main__":
     io.set_port_interrupt('a', 1 << 2)
 
     raw_input('Press key to exit\n') # Use input() in Python 3
+    ipcon.disconnect()
