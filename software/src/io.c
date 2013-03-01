@@ -1,5 +1,5 @@
 /* io16-bricklet
- * Copyright (C) 2012 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2012-2013 Matthias Bolte <matthias@tinkerforge.com>
  * Copyright (C) 2010-2013 Olaf Lüke <olaf@tinkerforge.com>
  *
  * io.c: Implementation of IO-16 Bricklet messages
@@ -78,6 +78,11 @@ void invocation(const ComType com, const uint8_t *data) {
 
 		case FID_GET_PORT_MONOFLOP: {
 			get_port_monoflop(com, (GetPortMonoflop*)data);
+			break;
+		}
+
+		case FID_SET_SELECTED_VALUES: {
+			set_selected_values(com, (SetSelectedValues*)data);
 			break;
 		}
 
