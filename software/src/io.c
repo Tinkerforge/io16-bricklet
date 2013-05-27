@@ -142,7 +142,8 @@ void send_interrupt_callback(const char port,
                              const uint8_t internal_address_inft,
                              const uint8_t internal_address_gpio,
                              uint8_t *last_intf,
-                             uint8_t *last_gpio) {
+                             uint8_t *last_gpio,
+                             uint32_t *port_counter) {
 	uint8_t new_intf = io_read(internal_address_inft);
 	uint8_t new_gpio = io_read(internal_address_gpio);
 	if(new_intf != *last_intf ||
@@ -160,7 +161,7 @@ void send_interrupt_callback(const char port,
 		BA->send_blocking_with_timeout(&is,
 		                               sizeof(InterruptSignal),
 		                               *BA->com_current);
-		BC->port_a_counter = BC->debounce_period;
+		*port_counter = BC->debounce_period;
 	}
 }
 
@@ -256,7 +257,8 @@ void tick(const uint8_t tick_type) {
 			                        I2C_INTERNAL_ADDRESS_INTF_A,
 			                        I2C_INTERNAL_ADDRESS_GPIO_A,
 			                        &BC->port_a_last_intf,
-			                        &BC->port_a_last_gpio);
+			                        &BC->port_a_last_gpio,
+			                        &BC->port_a_counter);
 		}
 		if(BC->port_b_counter == 0 &&
 		   (PIN_INT_B.pio->PIO_PDSR & PIN_INT_B.mask) == 0) {
@@ -264,7 +266,8 @@ void tick(const uint8_t tick_type) {
 			                        I2C_INTERNAL_ADDRESS_INTF_B,
 			                        I2C_INTERNAL_ADDRESS_GPIO_B,
 			                        &BC->port_b_last_intf,
-			                        &BC->port_b_last_gpio);
+			                        &BC->port_b_last_gpio,
+			                        &BC->port_b_counter);
 		}
 
 		if(BC->port_a_monoflop_callback_mask) {
