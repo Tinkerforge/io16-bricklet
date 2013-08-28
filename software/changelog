@@ -6,3 +6,4 @@
 2.0.0: Support for protocol 2.0
 2.0.1: Add missing invocation for set_selected_values function
 2.0.2: Apply debounce period on port b again
+2.0.3: Add edge counters for pin 0 on both ports

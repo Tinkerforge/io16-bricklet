@@ -86,6 +86,21 @@ void invocation(const ComType com, const uint8_t *data) {
 			break;
 		}
 
+		case FID_GET_EDGE_COUNT: {
+			get_edge_count(com, (GetEdgeCount*)data);
+			break;
+		}
+
+		case FID_SET_EDGE_COUNT_CONFIG: {
+			set_edge_count_config(com, (SetEdgeCountConfig*)data);
+			break;
+		}
+
+		case FID_GET_EDGE_COUNT_CONFIG: {
+			get_edge_count_config(com, (GetEdgeCountConfig*)data);
+			break;
+		}
+
 		default: {
 			BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_NOT_SUPPORTED, com);
 			break;
@@ -130,12 +145,24 @@ void constructor(void) {
 
 	BC->port_a_monoflop_callback_mask = 0;
 	BC->port_b_monoflop_callback_mask = 0;
+
+	BC->port_a_pin_0_edge_count = 0;
+	BC->port_a_pin_0_edge_type = EDGE_TYPE_RISING;
+	BC->port_a_pin_0_edge_debounce = 100;
+	BC->port_a_pin_0_edge_debounce_counter = 0;
+	BC->port_a_pin_0_edge_last_state = 1;
+
+	BC->port_b_pin_0_edge_count = 0;
+	BC->port_b_pin_0_edge_type = EDGE_TYPE_RISING;
+	BC->port_b_pin_0_edge_debounce = 100;
+	BC->port_b_pin_0_edge_debounce_counter = 0;
+	BC->port_b_pin_0_edge_last_state = 1;
 }
 
 void destructor(void) {
-	PIN_RESET.type = PIO_INPUT;
+	/*PIN_RESET.type = PIO_INPUT;
 	PIN_RESET.attribute = PIO_PULLUP;
-	BA->PIO_Configure(&PIN_RESET, 1);
+	BA->PIO_Configure(&PIN_RESET, 1);*/
 }
 
 void send_interrupt_callback(const char port,
@@ -230,6 +257,43 @@ void send_monoflop_callback(const char port,
 	*monoflop_callback_mask = 0;
 }
 
+void update_edge_counter(const uint8_t internal_address_iodir,
+                         const uint8_t internal_address_gpio,
+                         uint8_t *edge_debounce_counter,
+                         const uint8_t edge_debounce,
+                         uint8_t *edge_last_state,
+                         const uint8_t edge_type,
+                         uint32_t *edge_count) {
+	if (*edge_debounce_counter != 0) {
+		return;
+	}
+
+	uint8_t direction_mask = io_read(internal_address_iodir);
+
+	if ((direction_mask & (1 << 0)) == 0) {
+		return;
+	}
+
+	uint8_t state = (io_read(internal_address_gpio) & (1 << 0)) ? 1 : 0;
+
+	if(state == *edge_last_state) {
+		return;
+	}
+
+	*edge_last_state = state;
+	*edge_debounce_counter = edge_debounce;
+
+	if(state) {
+		if(edge_type == EDGE_TYPE_RISING || edge_type == EDGE_TYPE_BOTH) {
+			++*edge_count;
+		}
+	} else {
+		if(edge_type == EDGE_TYPE_FALLING || edge_type == EDGE_TYPE_BOTH) {
+			++*edge_count;
+		}
+	}
+}
+
 void tick(const uint8_t tick_type) {
 	if(tick_type & TICK_TASK_TYPE_CALCULATION) {
 		if(BC->port_a_counter != 0) {
@@ -248,6 +312,29 @@ void tick(const uint8_t tick_type) {
 		update_monoflop_time(I2C_INTERNAL_ADDRESS_OLAT_B,
 		                     &BC->port_b_monoflop_callback_mask,
 		                     &b);
+
+		// edge counter
+		if(BC->port_a_pin_0_edge_debounce_counter != 0) {
+			BC->port_a_pin_0_edge_debounce_counter--;
+		}
+		if(BC->port_b_pin_0_edge_debounce_counter != 0) {
+			BC->port_b_pin_0_edge_debounce_counter--;
+		}
+
+		update_edge_counter(I2C_INTERNAL_ADDRESS_IODIR_A,
+		                    I2C_INTERNAL_ADDRESS_GPIO_A,
+		                    &BC->port_a_pin_0_edge_debounce_counter,
+		                    BC->port_a_pin_0_edge_debounce,
+		                    &BC->port_a_pin_0_edge_last_state,
+		                    BC->port_a_pin_0_edge_type,
+		                    &BC->port_a_pin_0_edge_count);
+		update_edge_counter(I2C_INTERNAL_ADDRESS_IODIR_B,
+		                    I2C_INTERNAL_ADDRESS_GPIO_B,
+		                    &BC->port_b_pin_0_edge_debounce_counter,
+		                    BC->port_b_pin_0_edge_debounce,
+		                    &BC->port_b_pin_0_edge_last_state,
+		                    BC->port_b_pin_0_edge_type,
+		                    &BC->port_b_pin_0_edge_count);
 	}
 
 	if(tick_type & TICK_TASK_TYPE_MESSAGE) {
@@ -631,4 +718,70 @@ void set_selected_values(const ComType com, const SetSelectedValues *data) {
 	io_write(internal_address, gpio);
 
 	BA->com_return_setter(com, data);
+}
+
+void get_edge_count(const ComType com, const GetEdgeCount *data) {
+	uint32_t *edge_count;
+
+	if(data->port == 'a' || data->port == 'A') {
+		edge_count = &BC->port_a_pin_0_edge_count;
+	} else if(data->port == 'b' || data->port == 'B') {
+		edge_count = &BC->port_b_pin_0_edge_count;
+	} else {
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+		return;
+	}
+
+	GetEdgeCountReturn gecr;
+
+	gecr.header        = data->header;
+	gecr.header.length = sizeof(GetEdgeCountReturn);
+	gecr.count         = *edge_count;
+
+	BA->send_blocking_with_timeout(&gecr,
+	                               sizeof(GetEdgeCountReturn),
+	                               com);
+
+	if(data->reset_counter) {
+		*edge_count = 0;
+	}
+}
+
+void set_edge_count_config(const ComType com, const SetEdgeCountConfig *data) {
+	if(data->port == 'a' || data->port == 'A') {
+		BC->port_a_pin_0_edge_type = data->edge_type;
+		BC->port_a_pin_0_edge_debounce = data->debounce;
+		BC->port_a_pin_0_edge_count = 0;
+	} else if(data->port == 'b' || data->port == 'B') {
+		BC->port_b_pin_0_edge_type = data->edge_type;
+		BC->port_b_pin_0_edge_debounce = data->debounce;
+		BC->port_b_pin_0_edge_count = 0;
+	} else {
+		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+		return;
+	}
+
+	BA->com_return_setter(com, data);
+}
+
+void get_edge_count_config(const ComType com, const GetEdgeCountConfig *data) {
+	GetEdgeCountConfigReturn geccr;
+
+	geccr.header        = data->header;
+	geccr.header.length = sizeof(GetEdgeCountConfigReturn);
+
+	if(data->port == 'a' || data->port == 'A') {
+		geccr.edge_type = BC->port_a_pin_0_edge_type;
+		geccr.debounce  = BC->port_a_pin_0_edge_debounce;
+	} else if(data->port == 'b' || data->port == 'B') {
+		geccr.edge_type = BC->port_b_pin_0_edge_type;
+		geccr.debounce  = BC->port_b_pin_0_edge_debounce;
+	} else {
+		BA->com_return_error(data, sizeof(GetEdgeCountConfigReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+		return;
+	}
+
+	BA->send_blocking_with_timeout(&geccr,
+	                               sizeof(GetEdgeCountConfigReturn),
+	                               com);
 }

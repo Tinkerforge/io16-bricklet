@@ -32,7 +32,7 @@
 
 #define BRICKLET_FIRMWARE_VERSION_MAJOR 2
 #define BRICKLET_FIRMWARE_VERSION_MINOR 0
-#define BRICKLET_FIRMWARE_VERSION_REVISION 2
+#define BRICKLET_FIRMWARE_VERSION_REVISION 3
 
 #define BRICKLET_HARDWARE_VERSION_MAJOR 1
 #define BRICKLET_HARDWARE_VERSION_MINOR 1
@@ -62,6 +62,18 @@ typedef struct {
 	uint32_t port_b_time_remaining[NUM_PINS_PER_PORT];
 	uint8_t port_a_monoflop_callback_mask;
 	uint8_t port_b_monoflop_callback_mask;
+
+	uint32_t port_a_pin_0_edge_count;
+	uint8_t port_a_pin_0_edge_type;
+	uint8_t port_a_pin_0_edge_debounce;
+	uint8_t port_a_pin_0_edge_debounce_counter;
+	uint8_t port_a_pin_0_edge_last_state;
+
+	uint32_t port_b_pin_0_edge_count;
+	uint8_t port_b_pin_0_edge_type;
+	uint8_t port_b_pin_0_edge_debounce;
+	uint8_t port_b_pin_0_edge_debounce_counter;
+	uint8_t port_b_pin_0_edge_last_state;
 } BrickContext;
 
 #endif
