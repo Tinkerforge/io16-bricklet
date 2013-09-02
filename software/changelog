@@ -7,3 +7,5 @@
 2.0.1: Add missing invocation for set_selected_values function
 2.0.2: Apply debounce period on port b again
 2.0.3: Add edge counters for pin 0 on both ports
+2.0.4: Fix edge count bug and save space to compile with O2
+
