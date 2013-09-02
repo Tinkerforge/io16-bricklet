@@ -123,125 +123,112 @@ void constructor(void) {
 	PIN_INT_B.attribute = PIO_PULLUP;
 	BA->PIO_Configure(&PIN_INT_B, 1);
 
-	BC->port_a_counter = 0;
-	BC->port_b_counter = 0;
 	BC->debounce_period = 100;
 
-	io_write(I2C_INTERNAL_ADDRESS_IOCON_A, IOCON_ODR);
-	io_write(I2C_INTERNAL_ADDRESS_IOCON_B, IOCON_ODR);
+	// Enable interrupt for edge count
+	io_write(I2C_INTERNAL_ADDRESS_GPINTEN_A, MASK_EDGE_COUNT);
+	BC->interrupt_edge = false;
 
-	// Default is input pull up
-	io_write(I2C_INTERNAL_ADDRESS_GPPU_A, 0xFF);
-	io_write(I2C_INTERNAL_ADDRESS_GPPU_B, 0xFF);
-	io_write(I2C_INTERNAL_ADDRESS_IODIR_A, 0xFF);
-	io_write(I2C_INTERNAL_ADDRESS_IODIR_B, 0xFF);
+	for(uint8_t i = 0; i < NUM_PORTS; i++) {
+		BC->counter[i] = 0;
 
-	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
-		BC->port_a_time[i] = 0;
-		BC->port_a_time_remaining[i] = 0;
-		BC->port_b_time[i] = 0;
-		BC->port_b_time_remaining[i] = 0;
+		io_write(I2C_INTERNAL_ADDRESS_IOCON_A + i, IOCON_ODR);
+
+		// Default is input pull up
+		io_write(I2C_INTERNAL_ADDRESS_GPPU_A+i, 0xFF);
+		io_write(I2C_INTERNAL_ADDRESS_IODIR_A+i, 0xFF);
+
+		BC->current_gpinten[i] = 0;
+		BC->current_olat[i] = 0;
+		BC->current_gpio[i] = 0xFF;
+		BC->current_gppu[i] = 0xFF;
+		BC->current_iodir[i] = 0xFF;
+
+		for(uint8_t j = 0; j < NUM_PINS_PER_PORT; j++) {
+			BC->time[j][i] = 0;
+			BC->time_remaining[j][i] = 0;
+		}
+
+		BC->monoflop_callback_mask[i] = 0;
+
+		BC->edge_count[i] = 0;
+		BC->edge_type[i] = EDGE_TYPE_RISING;
+		BC->edge_debounce[i] = 100;
+		BC->edge_debounce_counter[i] = 0;
+		BC->edge_last_state[i] = 1;
+
+		BC->interrupt_callback[i] = false;
 	}
-
-	BC->port_a_monoflop_callback_mask = 0;
-	BC->port_b_monoflop_callback_mask = 0;
-
-	BC->port_a_pin_0_edge_count = 0;
-	BC->port_a_pin_0_edge_type = EDGE_TYPE_RISING;
-	BC->port_a_pin_0_edge_debounce = 100;
-	BC->port_a_pin_0_edge_debounce_counter = 0;
-	BC->port_a_pin_0_edge_last_state = 1;
-
-	BC->port_b_pin_0_edge_count = 0;
-	BC->port_b_pin_0_edge_type = EDGE_TYPE_RISING;
-	BC->port_b_pin_0_edge_debounce = 100;
-	BC->port_b_pin_0_edge_debounce_counter = 0;
-	BC->port_b_pin_0_edge_last_state = 1;
 }
 
 void destructor(void) {
-	/*PIN_RESET.type = PIO_INPUT;
-	PIN_RESET.attribute = PIO_PULLUP;
-	BA->PIO_Configure(&PIN_RESET, 1);*/
 }
 
-void send_interrupt_callback(const char port,
-                             const uint8_t internal_address_inft,
-                             const uint8_t internal_address_gpio,
-                             uint8_t *last_intf,
-                             uint8_t *last_gpio,
-                             uint32_t *port_counter) {
-	uint8_t new_intf = io_read(internal_address_inft);
-	uint8_t new_gpio = io_read(internal_address_gpio);
-	if(new_intf != *last_intf ||
-	   (new_intf & new_gpio) != (*last_intf & *last_gpio)) {
+void send_interrupt_callback(uint8_t port_num) {
+	uint8_t new_gpio = io_read(I2C_INTERNAL_ADDRESS_GPIO_A + port_num);
+	const uint8_t mask = (new_gpio ^ BC->current_gpio[port_num]) & BC->current_gpinten[port_num];
+
+	if(mask != 0) {
 		InterruptSignal is;
 		BA->com_make_default_header(&is, BS->uid, sizeof(InterruptSignal), FID_INTERRUPT);
 
-		is.port           = port;
-		is.interrupt_mask = new_intf;
+		is.port           = port_num + 'a';
+		is.interrupt_mask = mask;
 		is.value_mask     = new_gpio;
 
-		*last_intf = new_intf;
-		*last_gpio = new_gpio;
+		BC->current_gpio[port_num] = new_gpio;
 
 		BA->send_blocking_with_timeout(&is,
 		                               sizeof(InterruptSignal),
 		                               *BA->com_current);
-		*port_counter = BC->debounce_period;
+		BC->counter[port_num] = BC->debounce_period;
 	}
 }
 
-void update_monoflop_time(const uint8_t internal_address_olat,
-                          uint8_t *monoflop_callback_mask,
-                          uint32_t **time_remaining) {
+void update_monoflop_time(const uint8_t port_num) {
 	uint8_t monoflop_done_mask = 0;
 
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
-		if((*time_remaining)[i] != 0) {
-			(*time_remaining)[i]--;
+		if(BC->time_remaining[i][port_num] != 0) {
+			BC->time_remaining[i][port_num]--;
 
-			if((*time_remaining)[i] == 0) {
+			if(BC->time_remaining[i][port_num] == 0) {
 				monoflop_done_mask |= (1 << i);
 			}
 		}
 	}
 
-	if (monoflop_done_mask == 0) {
+	if(monoflop_done_mask == 0) {
 		return;
 	}
 
-	uint8_t gpio = io_read(internal_address_olat);
-
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
 		if(monoflop_done_mask & (1 << i)) {
-			if(gpio & (1 << i)) {
-				gpio &= ~(1 << i);
+			if(BC->current_olat[port_num] & (1 << i)) {
+				BC->current_olat[port_num] &= ~(1 << i);
 			} else {
-				gpio |= (1 << i);
+				BC->current_olat[port_num] |= (1 << i);
 			}
 		}
 	}
 
-	io_write(internal_address_olat, gpio);
+	io_write(I2C_INTERNAL_ADDRESS_OLAT_A + port_num, BC->current_olat[port_num]);
 
-	*monoflop_callback_mask |= monoflop_done_mask;
+	BC->monoflop_callback_mask[port_num] |= monoflop_done_mask;
 }
 
-void send_monoflop_callback(const char port,
-                            const uint8_t internal_address_gpio,
-                            uint8_t *monoflop_callback_mask) {
+void send_monoflop_callback(const uint8_t port_num) {
 	MonoflopDone md;
 	BA->com_make_default_header(&md, BS->uid, sizeof(MonoflopDone), FID_MONOFLOP_DONE);
 
-	md.port           = port;
+	md.port           = port_num + 'a';
 	md.selection_mask = 0;
 	md.value_mask     = 0;
 
-	uint8_t gpio = io_read(internal_address_gpio);
+	uint8_t gpio = io_read(I2C_INTERNAL_ADDRESS_GPIO_A + port_num);
 
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
-		if (*monoflop_callback_mask & (1 << i)) {
+		if (BC->monoflop_callback_mask[port_num] & (1 << i)) {
 			md.selection_mask |= (1 << i);
 
 			if(gpio & (1 << i)) {
@@ -254,130 +241,99 @@ void send_monoflop_callback(const char port,
 	                               sizeof(MonoflopDone),
 	                               *BA->com_current);
 
-	*monoflop_callback_mask = 0;
+	BC->monoflop_callback_mask[port_num] = 0;
 }
 
-void update_edge_counter(const uint8_t internal_address_iodir,
-                         const uint8_t internal_address_gpio,
-                         uint8_t *edge_debounce_counter,
-                         const uint8_t edge_debounce,
-                         uint8_t *edge_last_state,
-                         const uint8_t edge_type,
-                         uint32_t *edge_count) {
-	if (*edge_debounce_counter != 0) {
-		return;
-	}
+void update_edge_counter(void) {
+	uint16_t gpio_a = 0xFFFF;
 
-	uint8_t direction_mask = io_read(internal_address_iodir);
-
-	if ((direction_mask & (1 << 0)) == 0) {
-		return;
-	}
-
-	uint8_t state = (io_read(internal_address_gpio) & (1 << 0)) ? 1 : 0;
-
-	if(state == *edge_last_state) {
-		return;
-	}
-
-	*edge_last_state = state;
-	*edge_debounce_counter = edge_debounce;
-
-	if(state) {
-		if(edge_type == EDGE_TYPE_RISING || edge_type == EDGE_TYPE_BOTH) {
-			++*edge_count;
+	for(uint8_t i = 0; i < NUM_EDGE_COUNT; i++) {
+		if(BC->edge_debounce_counter[i] != 0) {
+			continue;
 		}
-	} else {
-		if(edge_type == EDGE_TYPE_FALLING || edge_type == EDGE_TYPE_BOTH) {
-			++*edge_count;
+
+		if((BC->current_iodir[i] & (1 << i)) == 0) {
+			continue;
+		}
+
+		if(gpio_a == 0xFFFF) {
+			gpio_a = io_read(I2C_INTERNAL_ADDRESS_GPIO_A);
+		}
+
+		uint8_t state = (gpio_a & (1 << i)) ? 1 : 0;
+
+		if(state == BC->edge_last_state[i]) {
+			continue;
+		}
+
+		BC->edge_last_state[i] = state;
+		BC->edge_debounce_counter[i] = BC->edge_debounce[i];
+
+		if((BC->edge_type[i] == EDGE_TYPE_BOTH) ||
+		   (state && (BC->edge_type[i] == EDGE_TYPE_RISING)) ||
+		   (!state && (BC->edge_type[i] == EDGE_TYPE_FALLING))) {
+				BC->edge_count[i]++;
 		}
 	}
 }
 
 void tick(const uint8_t tick_type) {
 	if(tick_type & TICK_TASK_TYPE_CALCULATION) {
-		if(BC->port_a_counter != 0) {
-			BC->port_a_counter--;
-		}
-		if(BC->port_b_counter != 0) {
-			BC->port_b_counter--;
-		}
+		for(uint8_t i = 0; i < NUM_PORTS; i++) {
+			if(BC->counter[i] != 0) {
+				BC->counter[i]--;
+			}
 
-		uint32_t *a = BC->port_a_time_remaining;
-		uint32_t *b = BC->port_b_time_remaining;
+			update_monoflop_time(i);
 
-		update_monoflop_time(I2C_INTERNAL_ADDRESS_OLAT_A,
-		                     &BC->port_a_monoflop_callback_mask,
-		                     &a);
-		update_monoflop_time(I2C_INTERNAL_ADDRESS_OLAT_B,
-		                     &BC->port_b_monoflop_callback_mask,
-		                     &b);
-
-		// edge counter
-		if(BC->port_a_pin_0_edge_debounce_counter != 0) {
-			BC->port_a_pin_0_edge_debounce_counter--;
-		}
-		if(BC->port_b_pin_0_edge_debounce_counter != 0) {
-			BC->port_b_pin_0_edge_debounce_counter--;
+			// edge counter
+			if(BC->edge_debounce_counter[i] != 0) {
+				BC->edge_debounce_counter[i]--;
+			}
 		}
 
-		update_edge_counter(I2C_INTERNAL_ADDRESS_IODIR_A,
-		                    I2C_INTERNAL_ADDRESS_GPIO_A,
-		                    &BC->port_a_pin_0_edge_debounce_counter,
-		                    BC->port_a_pin_0_edge_debounce,
-		                    &BC->port_a_pin_0_edge_last_state,
-		                    BC->port_a_pin_0_edge_type,
-		                    &BC->port_a_pin_0_edge_count);
-		update_edge_counter(I2C_INTERNAL_ADDRESS_IODIR_B,
-		                    I2C_INTERNAL_ADDRESS_GPIO_B,
-		                    &BC->port_b_pin_0_edge_debounce_counter,
-		                    BC->port_b_pin_0_edge_debounce,
-		                    &BC->port_b_pin_0_edge_last_state,
-		                    BC->port_b_pin_0_edge_type,
-		                    &BC->port_b_pin_0_edge_count);
+		uint8_t tmp_a = (PIN_INT_A.pio->PIO_PDSR & PIN_INT_A.mask) == 0;
+
+		if(!BC->interrupt_edge) {
+			BC->interrupt_edge = tmp_a;
+		}
+
+		if(!BC->interrupt_callback[0]) {
+			BC->interrupt_callback[0] = tmp_a;
+		}
+		if(!BC->interrupt_callback[1]) {
+			BC->interrupt_callback[1] = (PIN_INT_B.pio->PIO_PDSR & PIN_INT_B.mask) == 0;
+		}
+
+		if(BC->interrupt_edge) {
+			update_edge_counter();
+		}
 	}
 
 	if(tick_type & TICK_TASK_TYPE_MESSAGE) {
-		if(BC->port_a_counter == 0 &&
-		   (PIN_INT_A.pio->PIO_PDSR & PIN_INT_A.mask) == 0) {
-			send_interrupt_callback('a',
-			                        I2C_INTERNAL_ADDRESS_INTF_A,
-			                        I2C_INTERNAL_ADDRESS_GPIO_A,
-			                        &BC->port_a_last_intf,
-			                        &BC->port_a_last_gpio,
-			                        &BC->port_a_counter);
-		}
-		if(BC->port_b_counter == 0 &&
-		   (PIN_INT_B.pio->PIO_PDSR & PIN_INT_B.mask) == 0) {
-			send_interrupt_callback('b',
-			                        I2C_INTERNAL_ADDRESS_INTF_B,
-			                        I2C_INTERNAL_ADDRESS_GPIO_B,
-			                        &BC->port_b_last_intf,
-			                        &BC->port_b_last_gpio,
-			                        &BC->port_b_counter);
-		}
+		for(uint8_t i = 0; i < NUM_PORTS; i++) {
+			if(BC->counter[i] == 0 && BC->interrupt_callback[i]) {
+				BC->interrupt_callback[i] = false;
+				send_interrupt_callback(i);
+			}
 
-		if(BC->port_a_monoflop_callback_mask) {
-			send_monoflop_callback('a',
-			                       I2C_INTERNAL_ADDRESS_GPIO_A,
-			                       &BC->port_a_monoflop_callback_mask);
-		}
-		if(BC->port_b_monoflop_callback_mask) {
-			send_monoflop_callback('b',
-			                       I2C_INTERNAL_ADDRESS_GPIO_B,
-			                       &BC->port_b_monoflop_callback_mask);
+			if(BC->monoflop_callback_mask[i]) {
+				send_monoflop_callback(i);
+			}
 		}
 	}
 }
 
-void io_write(const uint8_t internal_address, const uint8_t value) {
-	uint8_t address;
+uint8_t get_i2c_address(void) {
 	if(BS->address == I2C_EEPROM_ADDRESS_HIGH) {
-		address = I2C_ADDRESS_HIGH;
+		return I2C_ADDRESS_HIGH;
 	} else {
-		address = I2C_ADDRESS_LOW;
+		return I2C_ADDRESS_LOW;
 	}
+}
 
+void io_write(const uint8_t internal_address, const uint8_t value) {
+	const uint8_t address = get_i2c_address();
 	const uint8_t port = BS->port - 'a';
 	uint8_t write_value = value;
 
@@ -396,13 +352,7 @@ void io_write(const uint8_t internal_address, const uint8_t value) {
 }
 
 uint8_t io_read(const uint8_t internal_address) {
-	uint8_t address;
-	if(BS->address == I2C_EEPROM_ADDRESS_HIGH) {
-		address = I2C_ADDRESS_HIGH;
-	} else {
-		address = I2C_ADDRESS_LOW;
-	}
-
+	const uint8_t address = get_i2c_address();
 	const uint8_t port = BS->port - 'a';
 	uint8_t value;
 
@@ -422,13 +372,14 @@ uint8_t io_read(const uint8_t internal_address) {
 	return value;
 }
 
+uint8_t port_to_num(const char c) {
+	return c < 'C' ? c - 'A' : c - 'a';
+}
+
 void get_port(const ComType com, const GetPort *data) {
-	uint8_t internal_address;
-	if(data->port == 'a' || data->port == 'A') {
-		internal_address = I2C_INTERNAL_ADDRESS_GPIO_A;
-	} else if(data->port == 'b' || data->port == 'B') {
-		internal_address = I2C_INTERNAL_ADDRESS_GPIO_B;
-	} else {
+	const uint8_t port_num = port_to_num(data->port);
+
+	if(port_num > 1) {
 		BA->com_return_error(data, sizeof(GetPortReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -437,7 +388,7 @@ void get_port(const ComType com, const GetPort *data) {
 
 	gpr.header        = data->header;
 	gpr.header.length = sizeof(GetPortReturn);;
-	gpr.value_mask    = io_read(internal_address);
+	gpr.value_mask    = io_read(I2C_INTERNAL_ADDRESS_GPIO_A + port_num);
 
 	BA->send_blocking_with_timeout(&gpr, sizeof(GetPortReturn), com);
 }
@@ -445,84 +396,59 @@ void get_port(const ComType com, const GetPort *data) {
 void set_port(const ComType com, const SetPort *data) {
 	// set_port sets output latches, values are measured on port if port
 	// is configured as output
-	uint8_t internal_address;
-	uint32_t *time_remaining;
+	const uint8_t port_num = port_to_num(data->port);
 
-	if(data->port == 'a' || data->port == 'A') {
-		internal_address = I2C_INTERNAL_ADDRESS_OLAT_A;
-		time_remaining = BC->port_a_time_remaining;
-	} else if(data->port == 'b' || data->port == 'B') {
-		internal_address = I2C_INTERNAL_ADDRESS_OLAT_B;
-		time_remaining = BC->port_b_time_remaining;
-	} else {
+	if(port_num > 1) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
-		time_remaining[i] = 0;
+		 BC->time_remaining[i][port_num] = 0;
 	}
 
-	io_write(internal_address, data->value_mask);
+	BC->current_olat[port_num] = data->value_mask;
+	io_write(I2C_INTERNAL_ADDRESS_OLAT_A + port_num, BC->current_olat[port_num]);
 
 	BA->com_return_setter(com, data);
 }
 
 void set_port_configuration(const ComType com, const SetPortConfiguration *data) {
-	uint8_t internal_address_iodir;
-	uint8_t internal_address_gppu;
-	uint8_t internal_address_olat;
-	uint32_t *time_remaining;
+	const uint8_t port_num = port_to_num(data->port);
 
-	if(data->port == 'a' || data->port == 'A') {
-		internal_address_iodir = I2C_INTERNAL_ADDRESS_IODIR_A;
-		internal_address_gppu  = I2C_INTERNAL_ADDRESS_GPPU_A;
-		internal_address_olat  = I2C_INTERNAL_ADDRESS_OLAT_A;
-		time_remaining = BC->port_a_time_remaining;
-	} else if(data->port == 'b' || data->port == 'B') {
-		internal_address_iodir = I2C_INTERNAL_ADDRESS_IODIR_B;
-		internal_address_gppu  = I2C_INTERNAL_ADDRESS_GPPU_B;
-		internal_address_olat  = I2C_INTERNAL_ADDRESS_OLAT_B;
-		time_remaining = BC->port_b_time_remaining;
-	} else {
+	if(port_num > 1) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
-	uint8_t iodir;
-
 	if(data->direction == 'i' || data->direction == 'I') {
-		iodir = io_read(internal_address_iodir);
-		iodir |= data->selection_mask;
-		io_write(internal_address_iodir, iodir);
+		BC->current_iodir[port_num] |= data->selection_mask;
+		io_write(I2C_INTERNAL_ADDRESS_IODIR_A + port_num, BC->current_iodir[port_num]);
 
-		uint8_t gppu = io_read(internal_address_gppu);
 		if(data->value) {
-			gppu |= data->selection_mask;
+			BC->current_gppu[port_num] |= data->selection_mask;
 		} else {
-			gppu &= ~(data->selection_mask);
+			BC->current_gppu[port_num] &= ~(data->selection_mask);
 		}
-		io_write(internal_address_gppu, gppu);
+		io_write(I2C_INTERNAL_ADDRESS_GPPU_A + port_num, BC->current_gppu[port_num]);
 	} else if(data->direction == 'o' || data->direction == 'O') {
-		uint8_t gpio = io_read(internal_address_olat);
 		if(data->value) {
-			gpio |= data->selection_mask;
+			BC->current_olat[port_num] |= data->selection_mask;
 		} else {
-			gpio &= ~(data->selection_mask);
+			BC->current_olat[port_num] &= ~(data->selection_mask);
 		}
-		io_write(internal_address_olat, gpio);
+		io_write(I2C_INTERNAL_ADDRESS_OLAT_A + port_num, BC->current_olat[port_num]);
 
-		iodir = io_read(internal_address_iodir);
-		iodir &= ~(data->selection_mask);
-		io_write(internal_address_iodir, iodir);
+		BC->current_iodir[port_num] &= ~(data->selection_mask);
+		io_write(I2C_INTERNAL_ADDRESS_IODIR_A + port_num, BC->current_iodir[port_num]);
 	} else {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
-		if (data->selection_mask & (1 << i)) {
-			time_remaining[i] = 0;
+		if(data->selection_mask & (1 << i)) {
+			BC->time_remaining[i][port_num] = 0;
 		}
 	}
 
@@ -530,19 +456,9 @@ void set_port_configuration(const ComType com, const SetPortConfiguration *data)
 }
 
 void get_port_configuration(const ComType com, const GetPortConfiguration *data) {
-	uint8_t internal_address_iodir;
-	uint8_t internal_address_gppu;
-	uint8_t internal_address_olat;
+	const uint8_t port_num = port_to_num(data->port);
 
-	if(data->port == 'a' || data->port == 'A') {
-		internal_address_iodir = I2C_INTERNAL_ADDRESS_IODIR_A;
-		internal_address_gppu  = I2C_INTERNAL_ADDRESS_GPPU_A;
-		internal_address_olat  = I2C_INTERNAL_ADDRESS_OLAT_A;
-	} else if(data->port == 'b' || data->port == 'B') {
-		internal_address_iodir = I2C_INTERNAL_ADDRESS_IODIR_B;
-		internal_address_gppu  = I2C_INTERNAL_ADDRESS_GPPU_B;
-		internal_address_olat  = I2C_INTERNAL_ADDRESS_OLAT_B;
-	} else {
+	if(port_num > 1) {
 		BA->com_return_error(data, sizeof(GetPortConfigurationReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -551,12 +467,9 @@ void get_port_configuration(const ComType com, const GetPortConfiguration *data)
 
 	gpcr.header         = data->header;
 	gpcr.header.length  = sizeof(GetPortConfigurationReturn);
-	gpcr.direction_mask = io_read(internal_address_iodir);
-	uint8_t latch_mask  = io_read(internal_address_olat);
-	uint8_t pullup_mask = io_read(internal_address_gppu);
 
-	gpcr.value_mask = (  gpcr.direction_mask  & pullup_mask) |
-	                  ((~gpcr.direction_mask) & latch_mask);
+	gpcr.value_mask = (  BC->current_iodir[port_num]  & BC->current_gppu[port_num]) |
+	                  ((~BC->current_iodir[port_num]) &  BC->current_olat[port_num]);
 
 	BA->send_blocking_with_timeout(&gpcr, sizeof(GetPortConfigurationReturn), com);
 }
@@ -577,29 +490,28 @@ void get_debounce_period(const ComType com, const GetDebouncePeriod *data) {
 }
 
 void set_port_interrupt(const ComType com, const SetPortInterrupt *data) {
-	uint8_t internal_address_gpinten;
+	const uint8_t port_num = port_to_num(data->port);
 
-	if(data->port == 'a' || data->port == 'A') {
-		internal_address_gpinten = I2C_INTERNAL_ADDRESS_GPINTEN_A;
-	} else if(data->port == 'b' || data->port == 'B') {
-		internal_address_gpinten = I2C_INTERNAL_ADDRESS_GPINTEN_B;
-	} else {
+	uint8_t mask = data->interrupt_mask;
+
+	if(port_num > 1) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
-	io_write(internal_address_gpinten, data->interrupt_mask);
+	BC->current_gpinten[port_num] = data->interrupt_mask;
+
+	if(port_num == 0) {
+		mask |= MASK_EDGE_COUNT;
+	}
+	io_write(I2C_INTERNAL_ADDRESS_GPINTEN_A + port_num, mask);
 	BA->com_return_setter(com, data);
 }
 
 void get_port_interrupt(const ComType com, const GetPortInterrupt *data) {
-	uint8_t internal_address_gpinten;
+	const uint8_t port_num = port_to_num(data->port);
 
-	if(data->port == 'a' || data->port == 'A') {
-		internal_address_gpinten = I2C_INTERNAL_ADDRESS_GPINTEN_A;
-	} else if(data->port == 'b' || data->port == 'B') {
-		internal_address_gpinten = I2C_INTERNAL_ADDRESS_GPINTEN_B;
-	} else {
+	if(port_num > 1) {
 		BA->com_return_error(data, sizeof(GetPortInterruptReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -608,71 +520,40 @@ void get_port_interrupt(const ComType com, const GetPortInterrupt *data) {
 
 	gpir.header         = data->header;
 	gpir.header.length  = sizeof(GetPortInterruptReturn);
-	gpir.interrupt_mask = io_read(internal_address_gpinten);
+	gpir.interrupt_mask = BC->current_gpinten[port_num];
 
 	BA->send_blocking_with_timeout(&gpir, sizeof(GetPortInterruptReturn), com);
 }
 
 void set_port_monoflop(const ComType com, const SetPortMonoflop *data) {
-	uint8_t internal_address_iodir;
-	uint8_t internal_address_olat;
-	uint32_t *time;
-	uint32_t *time_remaining;
+	const uint8_t port_num = port_to_num(data->port);
 
-	if(data->port == 'a' || data->port == 'A') {
-		internal_address_iodir = I2C_INTERNAL_ADDRESS_IODIR_A;
-		internal_address_olat = I2C_INTERNAL_ADDRESS_OLAT_A;
-		time = BC->port_a_time;
-		time_remaining = BC->port_a_time_remaining;
-	} else if(data->port == 'b' || data->port == 'B') {
-		internal_address_iodir = I2C_INTERNAL_ADDRESS_IODIR_B;
-		internal_address_olat = I2C_INTERNAL_ADDRESS_OLAT_B;
-		time = BC->port_b_time;
-		time_remaining = BC->port_b_time_remaining;
-	} else {
+	if(port_num > 1) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
-	uint8_t direction_mask = io_read(internal_address_iodir);
-	uint8_t gpio = io_read(internal_address_olat);
-
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
-		if((data->selection_mask & (1 << i)) && (direction_mask & (1 << i)) == 0) {
+		if((data->selection_mask & (1 << i)) && (BC->current_iodir[port_num] & (1 << i)) == 0) {
 			if(data->value_mask & (1 << i)) {
-				gpio |= (1 << i);
+				BC->current_olat[port_num] |= (1 << i);
 			} else {
-				gpio &= ~(1 << i);
+				BC->current_olat[port_num] &= ~(1 << i);
 			}
 
-			time[i] = data->time;
-			time_remaining[i] = data->time;
+			BC->time[i][port_num] = data->time;
+			BC->time_remaining[i][port_num] = data->time;
 		}
 	}
 
-	io_write(internal_address_olat, gpio);
+	io_write(I2C_INTERNAL_ADDRESS_OLAT_A + port_num, BC->current_olat[port_num]);
 	BA->com_return_setter(com, data);
 }
 
 void get_port_monoflop(const ComType com, const GetPortMonoflop *data) {
-	uint8_t internal_address;
-	uint32_t *time;
-	uint32_t *time_remaining;
+	const uint8_t port_num = port_to_num(data->port);
 
-	if(data->port == 'a' || data->port == 'A') {
-		internal_address = I2C_INTERNAL_ADDRESS_GPIO_A;
-		time = BC->port_a_time;
-		time_remaining = BC->port_a_time_remaining;
-	} else if(data->port == 'b' || data->port == 'B') {
-		internal_address = I2C_INTERNAL_ADDRESS_GPIO_B;
-		time = BC->port_b_time;
-		time_remaining = BC->port_b_time_remaining;
-	} else {
-		BA->com_return_error(data, sizeof(GetPortMonoflopReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
-		return;
-	}
-
-	if(data->pin >= NUM_PINS_PER_PORT) {
+	if(port_num > 1 || data->pin >= NUM_PINS_PER_PORT) {
 		BA->com_return_error(data, sizeof(GetPortMonoflopReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
@@ -681,105 +562,80 @@ void get_port_monoflop(const ComType com, const GetPortMonoflop *data) {
 
 	gpmr.header         = data->header;
 	gpmr.header.length  = sizeof(GetPortMonoflopReturn);
-	gpmr.value          = (io_read(internal_address) & (1 << data->pin)) ? 1 : 0;
-	gpmr.time           = time[data->pin];
-	gpmr.time_remaining = time_remaining[data->pin];
+	gpmr.value          = (io_read(I2C_INTERNAL_ADDRESS_GPIO_A + port_num) & (1 << data->pin)) ? 1 : 0;
+	gpmr.time           = BC->time[data->pin][port_num];
+	gpmr.time_remaining = BC->time_remaining[data->pin][port_num];
 
 	BA->send_blocking_with_timeout(&gpmr, sizeof(GetPortMonoflopReturn), com);
 }
 
 void set_selected_values(const ComType com, const SetSelectedValues *data) {
-	uint8_t internal_address;
-	uint32_t *time_remaining;
+	const uint8_t port_num = port_to_num(data->port);
 
-	if(data->port == 'a' || data->port == 'A') {
-		internal_address = I2C_INTERNAL_ADDRESS_OLAT_A;
-		time_remaining = BC->port_a_time_remaining;
-	} else if(data->port == 'b' || data->port == 'B') {
-		internal_address = I2C_INTERNAL_ADDRESS_OLAT_B;
-		time_remaining = BC->port_b_time_remaining;
-	} else {
+	if(port_num > 1) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
 		return;
 	}
 
-	uint8_t gpio = io_read(internal_address);
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
 		if(data->selection_mask & (1 << i)) {
-			time_remaining[i] = 0;
+			BC->time_remaining[i][port_num] = 0;
 			if(data->value_mask & (1 << i)) {
-				gpio |= 1 << i;
+				BC->current_iodir[port_num] |= 1 << i;
 			} else {
-				gpio &= ~(1 << i);
+				BC->current_iodir[port_num] &= ~(1 << i);
 			}
 		}
 	}
 
-	io_write(internal_address, gpio);
+	io_write(I2C_INTERNAL_ADDRESS_OLAT_A + port_num, BC->current_iodir[port_num]);
 
 	BA->com_return_setter(com, data);
 }
 
 void get_edge_count(const ComType com, const GetEdgeCount *data) {
-	uint32_t *edge_count;
-
-	if(data->port == 'a' || data->port == 'A') {
-		edge_count = &BC->port_a_pin_0_edge_count;
-	} else if(data->port == 'b' || data->port == 'B') {
-		edge_count = &BC->port_b_pin_0_edge_count;
-	} else {
+	if(data->pin > 1) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
-		return;
 	}
 
 	GetEdgeCountReturn gecr;
 
 	gecr.header        = data->header;
 	gecr.header.length = sizeof(GetEdgeCountReturn);
-	gecr.count         = *edge_count;
+	gecr.count         = BC->edge_count[data->pin];
 
 	BA->send_blocking_with_timeout(&gecr,
 	                               sizeof(GetEdgeCountReturn),
 	                               com);
 
 	if(data->reset_counter) {
-		*edge_count = 0;
+		BC->edge_count[data->pin] = 0;
 	}
 }
 
 void set_edge_count_config(const ComType com, const SetEdgeCountConfig *data) {
-	if(data->port == 'a' || data->port == 'A') {
-		BC->port_a_pin_0_edge_type = data->edge_type;
-		BC->port_a_pin_0_edge_debounce = data->debounce;
-		BC->port_a_pin_0_edge_count = 0;
-	} else if(data->port == 'b' || data->port == 'B') {
-		BC->port_b_pin_0_edge_type = data->edge_type;
-		BC->port_b_pin_0_edge_debounce = data->debounce;
-		BC->port_b_pin_0_edge_count = 0;
-	} else {
+	if(data->pin > 1) {
 		BA->com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
-		return;
 	}
+
+	BC->edge_type[data->pin] = data->edge_type;
+	BC->edge_debounce[data->pin] = data->debounce;
+	BC->edge_count[data->pin] = 0;
 
 	BA->com_return_setter(com, data);
 }
 
 void get_edge_count_config(const ComType com, const GetEdgeCountConfig *data) {
+	if(data->pin > 1) {
+		BA->com_return_error(data, sizeof(GetEdgeCountConfigReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
+	}
+
 	GetEdgeCountConfigReturn geccr;
 
 	geccr.header        = data->header;
 	geccr.header.length = sizeof(GetEdgeCountConfigReturn);
-
-	if(data->port == 'a' || data->port == 'A') {
-		geccr.edge_type = BC->port_a_pin_0_edge_type;
-		geccr.debounce  = BC->port_a_pin_0_edge_debounce;
-	} else if(data->port == 'b' || data->port == 'B') {
-		geccr.edge_type = BC->port_b_pin_0_edge_type;
-		geccr.debounce  = BC->port_b_pin_0_edge_debounce;
-	} else {
-		BA->com_return_error(data, sizeof(GetEdgeCountConfigReturn), MESSAGE_ERROR_CODE_INVALID_PARAMETER, com);
-		return;
-	}
+	geccr.edge_type = BC->edge_type[data->pin];
+	geccr.debounce  = BC->edge_debounce[data->pin];
 
 	BA->send_blocking_with_timeout(&geccr,
 	                               sizeof(GetEdgeCountConfigReturn),

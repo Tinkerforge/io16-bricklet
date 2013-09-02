@@ -60,6 +60,8 @@
 #define EDGE_TYPE_FALLING 1
 #define EDGE_TYPE_BOTH    2
 
+#define MASK_EDGE_COUNT   ((1 << 1) | (1 << 0))
+
 #define FID_SET_PORT 1
 #define FID_GET_PORT 2
 #define FID_SET_PORT_CONFIGURATION 3
@@ -186,7 +188,7 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	char port;
+	uint8_t pin;
 	bool reset_counter;
 } __attribute__((__packed__)) GetEdgeCount;
 
@@ -197,14 +199,14 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	char port;
+	uint8_t pin;
 	uint8_t edge_type;
 	uint8_t debounce;
 } __attribute__((__packed__)) SetEdgeCountConfig;
 
 typedef struct {
 	MessageHeader header;
-	char port;
+	uint8_t pin;
 } __attribute__((__packed__)) GetEdgeCountConfig;
 
 typedef struct {

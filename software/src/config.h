@@ -32,7 +32,7 @@
 
 #define BRICKLET_FIRMWARE_VERSION_MAJOR 2
 #define BRICKLET_FIRMWARE_VERSION_MINOR 0
-#define BRICKLET_FIRMWARE_VERSION_REVISION 3
+#define BRICKLET_FIRMWARE_VERSION_REVISION 4
 
 #define BRICKLET_HARDWARE_VERSION_MAJOR 1
 #define BRICKLET_HARDWARE_VERSION_MINOR 1
@@ -47,33 +47,34 @@
 #define PIN_RESET      (BS->pin3_pwm)
 
 #define NUM_PINS_PER_PORT 8
+#define NUM_EDGE_COUNT 2
+
+#define NUM_PORTS 2
+#define PORT_A 0
+#define PORT_B 1
 
 typedef struct {
+	uint8_t current_gpinten[NUM_PORTS];
+	uint8_t current_gpio[NUM_PORTS];
+	uint8_t current_iodir[NUM_PORTS];
+	uint8_t current_gppu[NUM_PORTS];
+	uint8_t current_olat[NUM_PORTS];
+	uint8_t monoflop_callback_mask[NUM_PORTS];
+
+	uint8_t edge_type[NUM_EDGE_COUNT];
+	uint8_t edge_debounce[NUM_EDGE_COUNT];
+	uint8_t edge_debounce_counter[NUM_EDGE_COUNT];
+	uint8_t edge_last_state[NUM_EDGE_COUNT];
+	uint32_t edge_count[NUM_EDGE_COUNT];
+
 	uint32_t debounce_period;
-	uint32_t port_a_counter;
-	uint32_t port_b_counter;
-	uint8_t port_a_last_intf;
-	uint8_t port_b_last_intf;
-	uint8_t port_a_last_gpio;
-	uint8_t port_b_last_gpio;
-	uint32_t port_a_time[NUM_PINS_PER_PORT];
-	uint32_t port_b_time[NUM_PINS_PER_PORT];
-	uint32_t port_a_time_remaining[NUM_PINS_PER_PORT];
-	uint32_t port_b_time_remaining[NUM_PINS_PER_PORT];
-	uint8_t port_a_monoflop_callback_mask;
-	uint8_t port_b_monoflop_callback_mask;
+	uint32_t counter[NUM_PORTS];
 
-	uint32_t port_a_pin_0_edge_count;
-	uint8_t port_a_pin_0_edge_type;
-	uint8_t port_a_pin_0_edge_debounce;
-	uint8_t port_a_pin_0_edge_debounce_counter;
-	uint8_t port_a_pin_0_edge_last_state;
+	uint32_t time[NUM_PINS_PER_PORT][NUM_PORTS];
+	uint32_t time_remaining[NUM_PINS_PER_PORT][NUM_PORTS];
 
-	uint32_t port_b_pin_0_edge_count;
-	uint8_t port_b_pin_0_edge_type;
-	uint8_t port_b_pin_0_edge_debounce;
-	uint8_t port_b_pin_0_edge_debounce_counter;
-	uint8_t port_b_pin_0_edge_last_state;
+	bool interrupt_callback[NUM_PORTS];
+	bool interrupt_edge;
 } BrickContext;
 
 #endif
