@@ -6,9 +6,9 @@ require_once('Tinkerforge/BrickletIO16.php');
 use Tinkerforge\IPConnection;
 use Tinkerforge\BrickletIO16;
 
-$host = 'localhost';
-$port = 4223;
-$uid = '6VJ'; // Change to your UID
+const HOST = 'localhost';
+const PORT = 4223;
+const UID = '6VJ'; // Change to your UID
 
 // Callback function for interrupts
 function cb_interrupt($port, $interruptMask, $valueMask)
@@ -19,9 +19,9 @@ function cb_interrupt($port, $interruptMask, $valueMask)
 }
 
 $ipcon = new IPConnection(); // Create IP connection
-$io16 = new BrickletIO16($uid, $ipcon); // Create device object
+$io16 = new BrickletIO16(UID, $ipcon); // Create device object
 
-$ipcon->connect($host, $port); // Connect to brickd
+$ipcon->connect(HOST, PORT); // Connect to brickd
 // Don't use device before ipcon is connected
 
 // Register callback for interrupts
