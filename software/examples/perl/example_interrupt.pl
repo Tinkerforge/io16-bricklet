@@ -7,8 +7,8 @@ use constant HOST => 'localhost';
 use constant PORT => 4223;
 use constant UID => 'gfR'; # Change to your UID
 
-my $ipcon = IPConnection->new(); # Create IP connection
-my $io = BrickletIO16->new(&UID, $ipcon); # Create device object
+my $ipcon = Tinkerforge::IPConnection->new(); # Create IP connection
+my $io = Tinkerforge::BrickletIO16->new(&UID, $ipcon); # Create device object
 
 # Callback function for interrupts
 sub cb_interrupt
