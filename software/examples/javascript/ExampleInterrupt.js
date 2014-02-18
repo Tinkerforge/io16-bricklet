@@ -1,12 +1,11 @@
-var IPConnection = require('Tinkerforge/IPConnection');
-var BrickletIO16 = require('Tinkerforge/BrickletIO16');
+var Tinkerforge = require('tinkerforge');
 
 var HOST = 'localhost';
 var PORT = 4223;
 var UID = 'gfp';// Change to your UID
 
-var ipcon = new IPConnection();// Create IP connection
-var io = new BrickletIO16(UID, ipcon);// Create device object
+var ipcon = new Tinkerforge.IPConnection();// Create IP connection
+var io = new Tinkerforge.BrickletIO16(UID, ipcon);// Create device object
 
 ipcon.connect(HOST, PORT,
     function(error) {
@@ -15,7 +14,7 @@ ipcon.connect(HOST, PORT,
 );// Connect to brickd
 
 // Don't use device before ipcon is connected
-ipcon.on(IPConnection.CALLBACK_CONNECTED,
+ipcon.on(Tinkerforge.IPConnection.CALLBACK_CONNECTED,
     function(connectReason) {
         //Enable interrupt on pin 2 of port a
         io.setPortInterrupt('a', 1 << 2);      
@@ -23,7 +22,7 @@ ipcon.on(IPConnection.CALLBACK_CONNECTED,
 );
 
 // Register callback for interrupts
-io.on(BrickletIO16.CALLBACK_INTERRUPT,
+io.on(Tinkerforge.BrickletIO16.CALLBACK_INTERRUPT,
     // Callback function for interrupts
     function(port, interruptMask, valueMask) {
         console.log('Interrupt on port: '+port);
