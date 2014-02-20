@@ -8,4 +8,4 @@
 2.0.2: Apply debounce period on port b again
 2.0.3: Add edge counters for pin 0 on both ports
 2.0.4: Fix edge count bug and save space to compile with O2
-
+2.0.5: Fix direction_mask return of get_port_configuration and use correct internal register in set_selected_values

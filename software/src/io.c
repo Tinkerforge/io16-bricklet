@@ -1,5 +1,5 @@
 /* io16-bricklet
- * Copyright (C) 2012-2013 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2012-2014 Matthias Bolte <matthias@tinkerforge.com>
  * Copyright (C) 2010-2013 Olaf Lüke <olaf@tinkerforge.com>
  *
  * io.c: Implementation of IO-16 Bricklet messages
@@ -468,8 +468,9 @@ void get_port_configuration(const ComType com, const GetPortConfiguration *data)
 	gpcr.header         = data->header;
 	gpcr.header.length  = sizeof(GetPortConfigurationReturn);
 
-	gpcr.value_mask = (  BC->current_iodir[port_num]  & BC->current_gppu[port_num]) |
-	                  ((~BC->current_iodir[port_num]) &  BC->current_olat[port_num]);
+	gpcr.direction_mask = BC->current_iodir[port_num];
+	gpcr.value_mask     = (  BC->current_iodir[port_num]  & BC->current_gppu[port_num]) |
+	                      ((~BC->current_iodir[port_num]) & BC->current_olat[port_num]);
 
 	BA->send_blocking_with_timeout(&gpcr, sizeof(GetPortConfigurationReturn), com);
 }
@@ -581,14 +582,14 @@ void set_selected_values(const ComType com, const SetSelectedValues *data) {
 		if(data->selection_mask & (1 << i)) {
 			BC->time_remaining[i][port_num] = 0;
 			if(data->value_mask & (1 << i)) {
-				BC->current_iodir[port_num] |= 1 << i;
+				BC->current_olat[port_num] |= 1 << i;
 			} else {
-				BC->current_iodir[port_num] &= ~(1 << i);
+				BC->current_olat[port_num] &= ~(1 << i);
 			}
 		}
 	}
 
-	io_write(I2C_INTERNAL_ADDRESS_OLAT_A + port_num, BC->current_iodir[port_num]);
+	io_write(I2C_INTERNAL_ADDRESS_OLAT_A + port_num, BC->current_olat[port_num]);
 
 	BA->com_return_setter(com, data);
 }
