@@ -2,22 +2,22 @@ var Tinkerforge = require('tinkerforge');
 
 var HOST = 'localhost';
 var PORT = 4223;
-var UID = 'gfp';// Change to your UID
+var UID = 'gfp'; // Change to your UID
 
-var ipcon = new Tinkerforge.IPConnection();// Create IP connection
-var io = new Tinkerforge.BrickletIO16(UID, ipcon);// Create device object
+var ipcon = new Tinkerforge.IPConnection(); // Create IP connection
+var io = new Tinkerforge.BrickletIO16(UID, ipcon); // Create device object
 
 ipcon.connect(HOST, PORT,
     function(error) {
-        console.log('Error: '+error);        
+        console.log('Error: '+error);
     }
-);// Connect to brickd
-
+); // Connect to brickd
 // Don't use device before ipcon is connected
+
 ipcon.on(Tinkerforge.IPConnection.CALLBACK_CONNECTED,
     function(connectReason) {
-        //Enable interrupt on pin 2 of port a
-        io.setPortInterrupt('a', 1 << 2);      
+        // Enable interrupt on pin 2 of port a
+        io.setPortInterrupt('a', 1 << 2);
     }
 );
 
@@ -39,4 +39,3 @@ process.stdin.on('data',
         process.exit(0);
     }
 );
-
