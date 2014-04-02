@@ -19,7 +19,7 @@ $io->set_port_configuration('a', 1 << 0, 'o', 0);
 # Set pin 0 and 7 on port b to output high
 $io->set_port_configuration('b', (1 << 0) | (1 << 7), 'o', 1);
 
-print "\nPress any key to exit...\n";
+print "Press any key to exit...\n";
 <STDIN>;
 $ipcon->disconnect();
 
