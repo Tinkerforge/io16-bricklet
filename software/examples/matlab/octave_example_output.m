@@ -1,4 +1,4 @@
-function octave_example_output
+function octave_example_output()
     more off;
     
     HOST = "localhost";

@@ -1,4 +1,4 @@
-function matlab_example_output
+function matlab_example_output()
     import com.tinkerforge.IPConnection;
     import com.tinkerforge.BrickletIO16;
 
