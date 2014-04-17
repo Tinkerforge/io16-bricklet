@@ -17,6 +17,6 @@ function octave_example_output
     % Set pin 0 and 7 on port b to output high
     io.setPortConfiguration("b", bitor(bitshift(1, 0), bitshift(1,7)), "o", true);
 
-    input("\nPress any key to exit...\n", "s");
+    input("Press any key to exit...\n", "s");
     ipcon.disconnect();
 end

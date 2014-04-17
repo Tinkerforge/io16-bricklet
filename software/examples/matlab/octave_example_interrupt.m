@@ -12,18 +12,18 @@ function octave_example_interrupt
     % Don"t use device before ipcon is connected
 
     % Register callback for interrupts
-    io.addInterruptListener("cb_interrupt");
+    io.addInterruptCallback(@cb_interrupt);
 
     % Enable interrupt on pin 2 of port a
     io.setPortInterrupt("a", bitshift(1, 2));
 
-    input("\nPress any key to exit...\n", "s");
+    input("Press any key to exit...\n", "s");
     ipcon.disconnect();
 end
 
 % Callback function for interrupts
-function cb_interrupt(port, interrupt_mask, value_mask)
-    fprintf("Interrupt on port: %s\n", port);
-    fprintf("Interrupt by: %s\n", dec2bin(str2num(interrupt_mask.toString())));
-    fprintf("Value: %s\n", dec2bin(str2num(value_mask.toString())));
+function cb_interrupt(e)
+    fprintf("Interrupt on port: %s\n", e.port);
+    fprintf("Interrupt by: %s\n", dec2bin(str2num(e.interruptMask.toString())));
+    fprintf("Value: %s\n", dec2bin(str2num(e.valueMask.toString())));
 end
