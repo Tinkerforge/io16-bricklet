@@ -27,7 +27,7 @@ public class ExampleInterrupt {
 		// Enable interrupt on pin 2 of port a
 		io16.setPortInterrupt('a', (short)(1 << 2));
 
-		System.console().readLine("Press key to exit\n");
+		System.out.println("Press key to exit"); System.in.read();
 		ipcon.disconnect();
 	}
 }

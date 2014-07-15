@@ -21,7 +21,7 @@ public class ExampleOutput {
 		// Set pin 0 and 7 on port b to output high
 		io16.setPortConfiguration('b', (short)((1 << 0) | (1 << 7)), 'o', true);
 
-		System.console().readLine("Press key to exit\n");
+		System.out.println("Press key to exit"); System.in.read();
 		ipcon.disconnect();
 	}
 }
