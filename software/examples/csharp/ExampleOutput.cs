@@ -20,8 +20,8 @@ class Example
 		// Set pin 0 and 7 on port b to output high
 		io16.SetPortConfiguration('b', (1 << 0) | (1 << 7), 'o', true);
 
-		System.Console.WriteLine("Press key to exit");
-		System.Console.ReadKey();
+		System.Console.WriteLine("Press enter to exit");
+		System.Console.ReadLine();
 		ipcon.Disconnect();
 	}
 }
