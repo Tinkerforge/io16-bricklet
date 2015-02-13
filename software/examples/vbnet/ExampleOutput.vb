@@ -19,7 +19,7 @@ Module ExampleSimple
         io16.SetPortConfiguration("b"C, (1 << 0) or (1 << 7), "o"C, true)
 
         System.Console.WriteLine("Press key to exit")
-        System.Console.ReadKey()
+        System.Console.ReadLine()
         ipcon.Disconnect()
     End Sub
 End Module
