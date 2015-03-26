@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date Fr 30 Dez 2011 09:36:33 CET
+EESchema Schematic File Version 2  date Mi 02 Jan 2013 15:12:08 CET
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -30,18 +30,17 @@ LIBS:atmel
 LIBS:contrib
 LIBS:valves
 LIBS:tinkerforge
-LIBS:io-16-cache
-EELAYER 25  0
+EELAYER 27 0
 EELAYER END
-$Descr A4 11700 8267
+$Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title "IO16 Bricklet"
-Date "29 dec 2011"
-Rev "1.1"
+Date "2 jan 2013"
+Rev "1.2"
 Comp "Tinkerforge GmbH"
 Comment1 "Licensed under CERN OHL v.1.1"
-Comment2 "Copyright (©) 2011, B.Nordmeyer <bastian@tinkerforge.com>"
+Comment2 "Copyright (©) 2012, B.Nordmeyer <bastian@tinkerforge.com>"
 Comment3 ""
 Comment4 ""
 $EndDescr
@@ -64,8 +63,6 @@ Wire Wire Line
 	7450 1350 7450 1800
 Wire Wire Line
 	3350 5350 3350 5250
-Wire Wire Line
-	2000 3650 2350 3650
 Connection ~ 3150 4300
 Wire Wire Line
 	3200 4300 3150 4300
@@ -303,8 +300,6 @@ Wire Wire Line
 Wire Wire Line
 	3600 4450 3600 4300
 Wire Wire Line
-	8750 4450 7050 4450
-Wire Wire Line
 	7750 1350 7750 1700
 Wire Wire Line
 	7650 950  7650 900 
@@ -322,7 +317,7 @@ Wire Wire Line
 	2250 2950 2250 3100
 Connection ~ 4700 3850
 Text Notes 550  7200 0    40   ~ 0
-Copyright Tinkerforge GmbH 2011.\nThis documentation describes Open Hardware and is licensed under the\nCERN OHL v. 1.1.\nYou may redistribute and modify this documentation under the terms of the\nCERN OHL v.1.1. (http://ohwr.org/cernohl). This documentation is distributed\nWITHOUT ANY EXPRESS OR IMPLIED WARRANTY, INCLUDING OF\nMERCHANTABILITY, SATISFACTORY QUALITY AND FITNESS FOR A\nPARTICULAR PURPOSE. Please see the CERN OHL v.1.1 for applicable\nconditions\n
+Copyright Tinkerforge GmbH 2012.\nThis documentation describes Open Hardware and is licensed under the\nCERN OHL v. 1.1.\nYou may redistribute and modify this documentation under the terms of the\nCERN OHL v.1.1. (http://ohwr.org/cernohl). This documentation is distributed\nWITHOUT ANY EXPRESS OR IMPLIED WARRANTY, INCLUDING OF\nMERCHANTABILITY, SATISFACTORY QUALITY AND FITNESS FOR A\nPARTICULAR PURPOSE. Please see the CERN OHL v.1.1 for applicable\nconditions\n
 $Comp
 L VCC #PWR01
 U 1 1 4DBA83CC
@@ -344,10 +339,6 @@ F 2 "741X083" H 7800 1150 60  0001 C CNN
 	1    7800 1150
 	0    -1   1    0   
 $EndComp
-Text GLabel 2350 3650 2    60   Input ~ 0
-RESET
-Text GLabel 8750 4450 2    60   Input ~ 0
-RESET
 $Comp
 L GND #PWR02
 U 1 1 4CF78DD2
@@ -752,7 +743,7 @@ U 1 1 4C693734
 P 10900 6700
 F 0 "U7" H 10950 6750 60  0001 C CNN
 F 1 "DRILL" H 10900 6700 60  0000 C CNN
-F 2 "Drill" H 10900 6700 60  0001 C CNN
+F 2 "DRILL_NP" H 10900 6700 60  0001 C CNN
 	1    10900 6700
 	1    0    0    -1  
 $EndComp
@@ -762,7 +753,7 @@ U 1 1 4C693732
 P 10600 6700
 F 0 "U5" H 10650 6750 60  0001 C CNN
 F 1 "DRILL" H 10600 6700 60  0000 C CNN
-F 2 "Drill" H 10600 6700 60  0001 C CNN
+F 2 "DRILL_NP" H 10600 6700 60  0001 C CNN
 	1    10600 6700
 	1    0    0    -1  
 $EndComp
@@ -772,7 +763,7 @@ U 1 1 4C693730
 P 10900 6500
 F 0 "U6" H 10950 6550 60  0001 C CNN
 F 1 "DRILL" H 10900 6500 60  0000 C CNN
-F 2 "Drill" H 10900 6500 60  0001 C CNN
+F 2 "DRILL_NP" H 10900 6500 60  0001 C CNN
 	1    10900 6500
 	1    0    0    -1  
 $EndComp
@@ -782,7 +773,7 @@ U 1 1 4C693727
 P 10600 6500
 F 0 "U4" H 10650 6550 60  0001 C CNN
 F 1 "DRILL" H 10600 6500 60  0000 C CNN
-F 2 "Drill" H 10600 6500 60  0001 C CNN
+F 2 "DRILL_NP" H 10600 6500 60  0001 C CNN
 	1    10600 6500
 	1    0    0    -1  
 $EndComp
@@ -863,4 +854,16 @@ F 2 "CON-SENSOR" H 1550 3300 60  0001 C CNN
 	1    1550 3300
 	-1   0    0    -1  
 $EndComp
+$Comp
+L VAA #PWR26
+U 1 1 50E43575
+P 8500 4450
+F 0 "#PWR26" H 8500 4510 30  0001 C CNN
+F 1 "VAA" H 8500 4560 30  0000 C CNN
+	1    8500 4450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	8500 4450 7050 4450
+NoConn ~ 2000 3650
 $EndSCHEMATC
