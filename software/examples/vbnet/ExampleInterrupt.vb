@@ -7,7 +7,8 @@ Module ExampleInterrupt
 
     ' Callback function for interrupts
     Sub InterruptCB(ByVal sender As BrickletIO16, _
-                    ByVal port As Char, ByVal interruptMask As Byte, ByVal valueMask As Byte)
+                    ByVal port As Char, ByVal interruptMask As Byte, _
+                    ByVal valueMask As Byte)
         Dim interruptBinary As String = System.Convert.ToString(interruptMask, 2)
         Dim valueBinary As String = System.Convert.ToString(valueMask, 2)
 

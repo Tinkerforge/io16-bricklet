@@ -12,7 +12,8 @@ type
     ipcon: TIPConnection;
     io: TBrickletIO16;
   public
-    procedure InterruptCB(sender: TBrickletIO16; const port: char; const interruptMask: byte; const valueMask: byte);
+    procedure InterruptCB(sender: TBrickletIO16; const port: char;
+                          const interruptMask: byte; const valueMask: byte);
     procedure Execute;
   end;
 
@@ -25,7 +26,8 @@ var
   e: TExample;
 
 { Callback function for interrupts }
-procedure TExample.InterruptCB(sender: TBrickletIO16; const port: char; const interruptMask: byte; const valueMask: byte);
+procedure TExample.InterruptCB(sender: TBrickletIO16; const port: char;
+                               const interruptMask: byte; const valueMask: byte);
 begin
   WriteLn(Format('Interrupt on port: %c', [port]));
   WriteLn(Format('Interrupt by: %d', [interruptMask]));
