@@ -1,6 +1,6 @@
 function octave_example_interrupt()
     more off;
-    
+
     HOST = "localhost";
     PORT = 4223;
     UID = "goe"; % Change to your UID
@@ -24,6 +24,14 @@ end
 % Callback function for interrupts
 function cb_interrupt(e)
     fprintf("Interrupt on port: %s\n", e.port);
-    fprintf("Interrupt by: %s\n", dec2bin(str2num(e.interruptMask.toString())));
-    fprintf("Value: %s\n", dec2bin(str2num(e.valueMask.toString())));
+    fprintf("Interrupt by: %s\n", dec2bin(short2int(e.interruptMask)));
+    fprintf("Value: %s\n", dec2bin(short2int(e.valueMask)));
+end
+
+function int = short2int(short)
+    if compare_versions(version(), "3.8", "<=")
+        int = short.intValue();
+    else
+        int = short;
+    end
 end
