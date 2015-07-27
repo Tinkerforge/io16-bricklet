@@ -8,7 +8,7 @@ include Tinkerforge
 
 HOST = 'localhost'
 PORT = 4223
-UID = '6VJ' # Change to your UID
+UID = 'XYZ' # Change to your UID
 
 ipcon = IPConnection.new # Create IP connection
 io16 = BrickletIO16.new UID, ipcon # Create device object
@@ -20,7 +20,7 @@ ipcon.connect HOST, PORT # Connect to brickd
 io16.set_port_configuration 'a', 1 << 0, 'o', false
 
 # Set pin 0 and 7 on port b to output high
-io16.set_port_configuration 'b', (1 << 0) | (1 << 7), 'o', false
+io16.set_port_configuration 'b', (1 << 0) | (1 << 7), 'o', true
 
 puts 'Press key to exit'
 $stdin.gets
