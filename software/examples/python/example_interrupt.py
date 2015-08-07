@@ -6,7 +6,7 @@ PORT = 4223
 UID = "XYZ" # Change to your UID
 
 from tinkerforge.ip_connection import IPConnection
-from tinkerforge.bricklet_io16 import IO16
+from tinkerforge.bricklet_io16 import BrickletIO16
 
 # Callback function for interrupts
 def cb_interrupt(port, interrupt_mask, value_mask):
@@ -16,7 +16,7 @@ def cb_interrupt(port, interrupt_mask, value_mask):
 
 if __name__ == "__main__":
     ipcon = IPConnection() # Create IP connection
-    io16 = IO16(UID, ipcon) # Create device object
+    io16 = BrickletIO16(UID, ipcon) # Create device object
 
     ipcon.connect(HOST, PORT) # Connect to brickd
     # Don't use device before ipcon is connected
