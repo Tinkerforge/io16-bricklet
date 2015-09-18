@@ -10,7 +10,7 @@ type
   TExample = class
   private
     ipcon: TIPConnection;
-    io16: TBrickletIO16;
+    io: TBrickletIO16;
   public
     procedure Execute;
   end;
@@ -29,17 +29,17 @@ begin
   ipcon := TIPConnection.Create;
 
   { Create device object }
-  io16 := TBrickletIO16.Create(UID, ipcon);
+  io := TBrickletIO16.Create(UID, ipcon);
 
   { Connect to brickd }
   ipcon.Connect(HOST, PORT);
   { Don't use device before ipcon is connected }
 
-  { Set pin 0 on port a to output low }
-  io16.SetPortConfiguration('a', 1 shl 0, 'o', false);
+  { Set pin 0 on port A to output low }
+  io.SetPortConfiguration('a', 1 shl 0, 'o', false);
 
-  { Set pin 0 and 7 on port b to output high }
-  io16.SetPortConfiguration('b', (1 shl 0) or (1 shl 7), 'o', true);
+  { Set pin 0 and 7 on port B to output high }
+  io.SetPortConfiguration('b', (1 shl 0) or (1 shl 7), 'o', true);
 
   WriteLn('Press key to exit');
   ReadLn;

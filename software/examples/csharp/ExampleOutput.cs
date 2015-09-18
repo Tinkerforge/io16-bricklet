@@ -1,3 +1,4 @@
+using System;
 using Tinkerforge;
 
 class Example
@@ -9,19 +10,19 @@ class Example
 	static void Main()
 	{
 		IPConnection ipcon = new IPConnection(); // Create IP connection
-		BrickletIO16 io16 = new BrickletIO16(UID, ipcon); // Create device object
+		BrickletIO16 io = new BrickletIO16(UID, ipcon); // Create device object
 
 		ipcon.Connect(HOST, PORT); // Connect to brickd
 		// Don't use device before ipcon is connected
 
-		// Set pin 0 on port a to output low
-		io16.SetPortConfiguration('a', 1 << 0, 'o', false);
+		// Set pin 0 on port A to output low
+		io.SetPortConfiguration('a', 1 << 0, 'o', false);
 
-		// Set pin 0 and 7 on port b to output high
-		io16.SetPortConfiguration('b', (1 << 0) | (1 << 7), 'o', true);
+		// Set pin 0 and 7 on port B to output high
+		io.SetPortConfiguration('b', (1 << 0) | (1 << 7), 'o', true);
 
-		System.Console.WriteLine("Press enter to exit");
-		System.Console.ReadLine();
+		Console.WriteLine("Press enter to exit");
+		Console.ReadLine();
 		ipcon.Disconnect();
 	}
 }

@@ -3,29 +3,29 @@ LoadNETAssembly["Tinkerforge",NotebookDirectory[]<>"../../.."]
 
 host="localhost"
 port=4223
-uid="cno"(* Change to your UID *)
+uid="XYZ"(*Change to your UID*)
 
-(* Create IPConnection and device object *)
+(*Create IPConnection and device object*)
 ipcon=NETNew["Tinkerforge.IPConnection"]
-io16=NETNew["Tinkerforge.BrickletIO16",uid,ipcon]
+io=NETNew["Tinkerforge.BrickletIO16",uid,ipcon]
 ipcon@Connect[host,port]
 
-(* Enable interrupt on pin 2 of port a *)
-io16@SetPortInterrupt[ToCharacterCode["a"][[1]],FromDigits[{0,1,0,0},2]]
-
-(* Callback function for interrupts *)
+(*Callback function for interrupt callback*)
 InterruptCB[sender_,port_,interruptMask_,valueMask_]:=
  Module[{},
-  Print["Interrupt on port: "<>FromCharacterCode[port]];
-  Print["Interrupt by: "<>StringJoin[Map[ToString,IntegerDigits[interruptMask,2,4]]]];
-  Print["Value: "<>StringJoin[Map[ToString,IntegerDigits[valueMask,2,4]]]]
+  Print["Port: "<>FromCharacterCode[port]];
+  Print["Interrupt Mask: "<>StringJoin[Map[ToString,IntegerDigits[interruptMask,2,8]]]];
+  Print["Value Mask: "<>StringJoin[Map[ToString,IntegerDigits[valueMask,2,8]]]]
  ]
 
-AddEventHandler[io16@Interrupt,InterruptCB]
+AddEventHandler[io@Interrupt,InterruptCB]
+
+(*Enable interrupt on pin 2 of port A*)
+io@SetPortInterrupt[ToCharacterCode["a"][[1]],FromDigits[{0,0,0,0,0,1,0,0},2]]
 
 Input["Click OK to exit"]
 
-(* Clean up *)
+(*Clean up*)
 ipcon@Disconnect[]
-ReleaseNETObject[io4]
+ReleaseNETObject[io]
 ReleaseNETObject[ipcon]

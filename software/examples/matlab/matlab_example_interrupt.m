@@ -4,27 +4,28 @@ function matlab_example_interrupt()
 
     HOST = 'localhost';
     PORT = 4223;
-    UID = 'goe'; % Change to your UID
-    
+    UID = 'XYZ'; % Change to your UID
+
     ipcon = IPConnection(); % Create IP connection
     io = BrickletIO16(UID, ipcon); % Create device object
 
     ipcon.connect(HOST, PORT); % Connect to brickd
     % Don't use device before ipcon is connected
 
-    % Register callback for interrupts
+    % Register interrupt callback to function cb_interrupt
     set(io, 'InterruptCallback', @(h, e) cb_interrupt(e));
 
-    % Enable interrupt on pin 2 of port a
+    % Enable interrupt on pin 2 of port A
     io.setPortInterrupt('a', bitshift(1, 2));
 
-    input('Press any key to exit...\n', 's');
+    input('Press key to exit\n', 's');
     ipcon.disconnect();
 end
 
-% Callback function for interrupts
+% Callback function for interrupt callback
 function cb_interrupt(e)
-    fprintf('Interrupt on port: %s\n', e.port);
-    fprintf('Interrupt by: %s\n', dec2bin(e.interruptMask));
-    fprintf('Value: %s\n', dec2bin(e.valueMask));
+    fprintf('Port: %s\n', e.port);
+    fprintf('Interrupt Mask: %s\n', dec2bin(e.interruptMask));
+    fprintf('Value Mask: %s\n', dec2bin(e.valueMask));
+    fprintf('\n');
 end

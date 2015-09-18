@@ -7,13 +7,14 @@
 #define PORT 4223
 #define UID "XYZ" // Change to your UID
 
-// Callback function for interrupts
+// Callback function for interrupt callback
 void cb_interrupt(char port, uint8_t interrupt_mask, uint8_t value_mask, void *user_data) {
 	(void)user_data; // avoid unused parameter warning
 
-	printf("Interrupt on port: %c\n", port);
-	printf("Interrupt by: %d\n", interrupt_mask);
-	printf("Value: %d\n", value_mask);
+	printf("Port: %c\n", port);
+	printf("Interrupt Mask: %d\n", interrupt_mask);
+	printf("Value Mask: %d\n", value_mask);
+	printf("\n");
 }
 
 int main(void) {
@@ -22,8 +23,8 @@ int main(void) {
 	ipcon_create(&ipcon);
 
 	// Create device object
-	IO16 io16;
-	io16_create(&io16, UID, &ipcon);
+	IO16 io;
+	io16_create(&io, UID, &ipcon);
 
 	// Connect to brickd
 	if(ipcon_connect(&ipcon, HOST, PORT) < 0) {
@@ -32,14 +33,14 @@ int main(void) {
 	}
 	// Don't use device before ipcon is connected
 
-	// Register callback for interrupts
-	io16_register_callback(&io16,
+	// Register interrupt callback to function cb_interrupt
+	io16_register_callback(&io,
 	                       IO16_CALLBACK_INTERRUPT,
 	                       (void *)cb_interrupt,
 	                       NULL);
 
-	// Enable interrupt on pin 2 of port a
-	io16_set_port_interrupt(&io16, 'a', 1 << 2);
+	// Enable interrupt on pin 2 of port A
+	io16_set_port_interrupt(&io, 'a', 1 << 2);
 
 	printf("Press key to exit\n");
 	getchar();

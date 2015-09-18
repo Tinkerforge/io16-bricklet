@@ -10,10 +10,10 @@ type
   TExample = class
   private
     ipcon: TIPConnection;
-    io16: TBrickletIO16;
+    io: TBrickletIO16;
   public
-    procedure InterruptCB(sender: TBrickletIO16; const port: char;
-                          const interruptMask: byte; const valueMask: byte);
+    procedure InterruptCB(sender: TBrickletIO16;
+                          const port: char; const interruptMask: byte; const valueMask: byte);
     procedure Execute;
   end;
 
@@ -25,13 +25,14 @@ const
 var
   e: TExample;
 
-{ Callback function for interrupts }
-procedure TExample.InterruptCB(sender: TBrickletIO16; const port: char;
-                               const interruptMask: byte; const valueMask: byte);
+{ Callback procedure for interrupt callback }
+procedure TExample.InterruptCB(sender: TBrickletIO16;
+                               const port: char; const interruptMask: byte; const valueMask: byte);
 begin
-  WriteLn(Format('Interrupt on port: %c', [port]));
-  WriteLn(Format('Interrupt by: %d', [interruptMask]));
-  WriteLn(Format('Value: %d', [valueMask]));
+  WriteLn(Format('Port: %c', [port]));
+  WriteLn(Format('Interrupt Mask: %d', [interruptMask]));
+  WriteLn(Format('Value Mask: %d', [valueMask]));
+  WriteLn('');
 end;
 
 procedure TExample.Execute;
@@ -40,17 +41,17 @@ begin
   ipcon := TIPConnection.Create;
 
   { Create device object }
-  io16 := TBrickletIO16.Create(UID, ipcon);
+  io := TBrickletIO16.Create(UID, ipcon);
 
   { Connect to brickd }
   ipcon.Connect(HOST, PORT);
   { Don't use device before ipcon is connected }
 
-  { Register callback for interrupts }
-  io16.OnInterrupt := {$ifdef FPC}@{$endif}InterruptCB;
+  { Register interrupt callback to procedure InterruptCB }
+  io.OnInterrupt := {$ifdef FPC}@{$endif}InterruptCB;
 
-  { Enable interrupt on pin 2 of port a }
-  io16.SetPortInterrupt('a', 1 shl 2);
+  { Enable interrupt on pin 2 of port A }
+  io.SetPortInterrupt('a', 1 shl 2);
 
   WriteLn('Press key to exit');
   ReadLn;

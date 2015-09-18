@@ -34,24 +34,26 @@
                 var io = new Tinkerforge.BrickletIO16(UID, ipcon); // Create device object
                 ipcon.connect(HOST, PORT,
                     function(error) {
-                        textArea.value += 'Error: '+error+ '\n';
+                        textArea.value += 'Error: ' + error + '\n';
                     }
                 ); // Connect to brickd
                 // Don't use device before ipcon is connected
 
                 ipcon.on(Tinkerforge.IPConnection.CALLBACK_CONNECTED,
-                    function(connectReason) {
-                        //Enable interrupt on pin 2 of port a
+                    function (connectReason) {
+                        // Enable interrupt on pin 2 of port A
                         io.setPortInterrupt('a', 1 << 2);
                     }
                 );
-                // Register callback for interrupts
+
+                // Register interrupt callback
                 io.on(Tinkerforge.BrickletIO16.CALLBACK_INTERRUPT,
-                    // Callback function for interrupts
-                    function(port, interruptMask, valueMask) {
-                        textArea.value += 'Interrupt on port: '+port+'\n';
-                        textArea.value += 'Interrupt by: '+parseInt(interruptMask).toString(2)+'\n';
-                        textArea.value += 'Value: '+parseInt(valueMask).toString(2)+'\n';
+                    // Callback function for interrupt callback
+                    function (port, interruptMask, valueMask) {
+                        textArea.value += 'Port: ' + port + '\n';
+                        textArea.value += 'Interrupt Mask: ' + interruptMask.toString(2) + '\n';
+                        textArea.value += 'Value Mask: ' + valueMask.toString(2) + '\n';
+                        textArea.value += '\n';
                         textArea.scrollTop = textArea.scrollHeight;
                     }
                 );

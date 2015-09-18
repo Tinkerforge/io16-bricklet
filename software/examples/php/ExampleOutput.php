@@ -8,19 +8,19 @@ use Tinkerforge\BrickletIO16;
 
 const HOST = 'localhost';
 const PORT = 4223;
-const UID = '6VJ'; // Change to your UID
+const UID = 'XYZ'; // Change to your UID
 
 $ipcon = new IPConnection(); // Create IP connection
-$io16 = new BrickletIO16(UID, $ipcon); // Create device object
+$io = new BrickletIO16(UID, $ipcon); // Create device object
 
 $ipcon->connect(HOST, PORT); // Connect to brickd
 // Don't use device before ipcon is connected
 
-// Set pin 0 on port a to output low
-$io16->setPortConfiguration('a', 1 << 0, 'o', FALSE);
+// Set pin 0 on port A to output low
+$io->setPortConfiguration('a', 1 << 0, 'o', FALSE);
 
-// Set pin 0 and 7 on port b to output high
-$io16->setPortConfiguration('b', (1 << 0) | (1 << 7), 'o', TRUE);
+// Set pin 0 and 7 on port B to output high
+$io->setPortConfiguration('b', (1 << 0) | (1 << 7), 'o', TRUE);
 
 echo "Press key to exit\n";
 fgetc(fopen('php://stdin', 'r'));
