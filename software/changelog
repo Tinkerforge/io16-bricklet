@@ -20,13 +20,13 @@
 - Add missing invocation for set_selected_values function
 
 2013-05-27: 2.0.2 (167e627)
-- Apply debounce period on port b again
+- Apply debounce period on port B again
 
 2013-08-28: 2.0.3 (7a3e84f)
 - Add edge counters for pin 0 on both ports
 
 2013-09-02: 2.0.4 (31a3885)
-- Fix edge count bug and save space to compile with O2
+- Fix edge count bug and save space to compile with -O2
 
 2014-02-20: 2.0.5 (43b52fa)
 - Fix direction_mask return of get_port_configuration and use correct internal
