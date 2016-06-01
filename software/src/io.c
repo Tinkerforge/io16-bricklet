@@ -252,7 +252,7 @@ void update_edge_counter(void) {
 			continue;
 		}
 
-		if((BC->current_iodir[i] & (1 << i)) == 0) {
+		if((BC->current_iodir[0] & (1 << i)) == 0) {
 			continue;
 		}
 
