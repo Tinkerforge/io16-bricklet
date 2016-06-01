@@ -307,6 +307,7 @@ void tick(const uint8_t tick_type) {
 
 		if(BC->interrupt_edge) {
 			update_edge_counter();
+			BC->interrupt_edge = false;
 		}
 	}
 
