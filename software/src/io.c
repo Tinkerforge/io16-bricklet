@@ -1,5 +1,5 @@
 /* io16-bricklet
- * Copyright (C) 2012-2014 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2012-2014, 2016 Matthias Bolte <matthias@tinkerforge.com>
  * Copyright (C) 2010-2013 Olaf Lüke <olaf@tinkerforge.com>
  *
  * io.c: Implementation of IO-16 Bricklet messages
@@ -157,7 +157,8 @@ void constructor(void) {
 		BC->edge_debounce_counter[i] = 0;
 		BC->edge_last_state[i] = 1;
 
-		BC->interrupt_callback[i] = false;
+		BC->interrupt_callback_mask[i] = 0;
+		BC->interrupt_callback_value[i] = 0;
 	}
 }
 
@@ -165,24 +166,18 @@ void destructor(void) {
 }
 
 void send_interrupt_callback(uint8_t port_num) {
-	uint8_t new_gpio = io_read(I2C_INTERNAL_ADDRESS_GPIO_A + port_num);
-	const uint8_t mask = (new_gpio ^ BC->current_gpio[port_num]) & BC->current_gpinten[port_num];
+	InterruptSignal is;
+	BA->com_make_default_header(&is, BS->uid, sizeof(InterruptSignal), FID_INTERRUPT);
 
-	if(mask != 0) {
-		InterruptSignal is;
-		BA->com_make_default_header(&is, BS->uid, sizeof(InterruptSignal), FID_INTERRUPT);
+	is.port           = port_num + 'a';
+	is.interrupt_mask = BC->interrupt_callback_mask[port_num];
+	is.value_mask     = BC->interrupt_callback_value[port_num];
 
-		is.port           = port_num + 'a';
-		is.interrupt_mask = mask;
-		is.value_mask     = new_gpio;
+	BA->send_blocking_with_timeout(&is,
+	                               sizeof(InterruptSignal),
+	                               *BA->com_current);
 
-		BC->current_gpio[port_num] = new_gpio;
-
-		BA->send_blocking_with_timeout(&is,
-		                               sizeof(InterruptSignal),
-		                               *BA->com_current);
-		BC->counter[port_num] = BC->debounce_period;
-	}
+	BC->counter[port_num] = BC->debounce_period;
 }
 
 void update_monoflop_time(const uint8_t port_num) {
@@ -225,7 +220,7 @@ void send_monoflop_callback(const uint8_t port_num) {
 	md.selection_mask = 0;
 	md.value_mask     = 0;
 
-	uint8_t gpio = io_read(I2C_INTERNAL_ADDRESS_GPIO_A + port_num);
+	uint8_t gpio = io_read_gpio(port_num);
 
 	for(uint8_t i = 0; i < NUM_PINS_PER_PORT; i++) {
 		if (BC->monoflop_callback_mask[port_num] & (1 << i)) {
@@ -245,7 +240,7 @@ void send_monoflop_callback(const uint8_t port_num) {
 }
 
 void update_edge_counter(void) {
-	uint16_t gpio_a = 0xFFFF;
+	uint16_t gpio_a = BC->current_gpio[0];
 
 	for(uint8_t i = 0; i < NUM_EDGE_COUNT; i++) {
 		if(BC->edge_debounce_counter[i] != 0) {
@@ -254,10 +249,6 @@ void update_edge_counter(void) {
 
 		if((BC->current_iodir[0] & (1 << i)) == 0) {
 			continue;
-		}
-
-		if(gpio_a == 0xFFFF) {
-			gpio_a = io_read(I2C_INTERNAL_ADDRESS_GPIO_A);
 		}
 
 		uint8_t state = (gpio_a & (1 << i)) ? 1 : 0;
@@ -272,9 +263,19 @@ void update_edge_counter(void) {
 		if((BC->edge_type[i] == EDGE_TYPE_BOTH) ||
 		   (state && (BC->edge_type[i] == EDGE_TYPE_RISING)) ||
 		   (!state && (BC->edge_type[i] == EDGE_TYPE_FALLING))) {
-				BC->edge_count[i]++;
+			BC->edge_count[i]++;
 		}
 	}
+}
+
+void update_interrupt_callback(const uint8_t port_num) {
+	uint8_t new_gpio = io_read(I2C_INTERNAL_ADDRESS_GPIO_A + port_num);
+	uint8_t interrupt_mask = (new_gpio ^ BC->current_gpio[port_num]) & BC->current_gpinten[port_num];
+
+	BC->current_gpio[port_num] = new_gpio;
+
+	BC->interrupt_callback_mask[port_num] = interrupt_mask;
+	BC->interrupt_callback_value[port_num] = new_gpio;
 }
 
 void tick(const uint8_t tick_type) {
@@ -292,17 +293,18 @@ void tick(const uint8_t tick_type) {
 			}
 		}
 
-		uint8_t tmp_a = (PIN_INT_A.pio->PIO_PDSR & PIN_INT_A.mask) == 0;
+		bool int_a = (PIN_INT_A.pio->PIO_PDSR & PIN_INT_A.mask) == 0;
+		bool int_b = (PIN_INT_B.pio->PIO_PDSR & PIN_INT_B.mask) == 0;
 
-		if(!BC->interrupt_edge) {
-			BC->interrupt_edge = tmp_a;
+		if ((BC->interrupt_callback_mask[0] == 0 || !BC->interrupt_edge) && int_a) {
+			update_interrupt_callback(0);
+
+			BC->interrupt_edge = true;
 		}
 
-		if(!BC->interrupt_callback[0]) {
-			BC->interrupt_callback[0] = tmp_a;
-		}
-		if(!BC->interrupt_callback[1]) {
-			BC->interrupt_callback[1] = (PIN_INT_B.pio->PIO_PDSR & PIN_INT_B.mask) == 0;
+		if (BC->interrupt_callback_mask[1] == 0 && int_b) {
+			update_interrupt_callback(1);
+
 		}
 
 		if(BC->interrupt_edge) {
@@ -313,9 +315,9 @@ void tick(const uint8_t tick_type) {
 
 	if(tick_type & TICK_TASK_TYPE_MESSAGE) {
 		for(uint8_t i = 0; i < NUM_PORTS; i++) {
-			if(BC->counter[i] == 0 && BC->interrupt_callback[i]) {
-				BC->interrupt_callback[i] = false;
+			if(BC->counter[i] == 0 && BC->interrupt_callback_mask[i] != 0) {
 				send_interrupt_callback(i);
+				BC->interrupt_callback_mask[i] = 0;
 			}
 
 			if(BC->monoflop_callback_mask[i]) {
@@ -373,6 +375,29 @@ uint8_t io_read(const uint8_t internal_address) {
 	return value;
 }
 
+uint8_t io_read_gpio(const uint8_t port_num) {
+	uint8_t new_gpio = io_read(I2C_INTERNAL_ADDRESS_GPIO_A + port_num);
+	uint8_t interrupt_mask = (new_gpio ^ BC->current_gpio[port_num]) & BC->current_gpinten[port_num];
+	uint8_t edge_mask = 0;
+
+	if (port_num == 0) {
+		edge_mask = (new_gpio ^ BC->current_gpio[port_num]) & MASK_EDGE_COUNT;
+	}
+
+	if (BC->interrupt_callback_mask[port_num] == 0 && interrupt_mask != 0) {
+		BC->interrupt_callback_mask[port_num] = interrupt_mask;
+		BC->interrupt_callback_value[port_num] = new_gpio;
+	}
+
+	if (!BC->interrupt_edge && edge_mask != 0) {
+		BC->interrupt_edge = true;
+	}
+
+	BC->current_gpio[port_num] = new_gpio;
+
+	return new_gpio;
+}
+
 uint8_t port_to_num(const char c) {
 	return c < 'C' ? c - 'A' : c - 'a';
 }
@@ -388,8 +413,8 @@ void get_port(const ComType com, const GetPort *data) {
 	GetPortReturn gpr;
 
 	gpr.header        = data->header;
-	gpr.header.length = sizeof(GetPortReturn);;
-	gpr.value_mask    = io_read(I2C_INTERNAL_ADDRESS_GPIO_A + port_num);
+	gpr.header.length = sizeof(GetPortReturn);
+	gpr.value_mask    = io_read_gpio(port_num);
 
 	BA->send_blocking_with_timeout(&gpr, sizeof(GetPortReturn), com);
 }
@@ -564,7 +589,7 @@ void get_port_monoflop(const ComType com, const GetPortMonoflop *data) {
 
 	gpmr.header         = data->header;
 	gpmr.header.length  = sizeof(GetPortMonoflopReturn);
-	gpmr.value          = (io_read(I2C_INTERNAL_ADDRESS_GPIO_A + port_num) & (1 << data->pin)) ? 1 : 0;
+	gpmr.value          = (io_read_gpio(port_num) & (1 << data->pin)) ? 1 : 0;
 	gpmr.time           = BC->time[data->pin][port_num];
 	gpmr.time_remaining = BC->time_remaining[data->pin][port_num];
 

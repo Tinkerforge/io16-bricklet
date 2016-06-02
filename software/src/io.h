@@ -1,5 +1,5 @@
 /* io16-bricklet
- * Copyright (C) 2012-2013 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2012-2013, 2016 Matthias Bolte <matthias@tinkerforge.com>
  * Copyright (C) 2010-2013 Olaf Lüke <olaf@tinkerforge.com>
  *
  * io.h: Implementation of IO-16 Bricklet messages
@@ -241,5 +241,6 @@ void tick(const uint8_t tick_type);
 
 void io_write(const uint8_t internal_address, const uint8_t value);
 uint8_t io_read(const uint8_t internal_address);
+uint8_t io_read_gpio(const uint8_t port_num);
 
 #endif

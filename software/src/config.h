@@ -1,5 +1,5 @@
 /* io16-bricklet
- * Copyright (C) 2012-2014 Matthias Bolte <matthias@tinkerforge.com>
+ * Copyright (C) 2012-2014, 2016 Matthias Bolte <matthias@tinkerforge.com>
  * Copyright (C) 2010-2012 Olaf Lüke <olaf@tinkerforge.com>
  *
  * config.h: IO-16 Bricklet specific configuration
@@ -73,7 +73,8 @@ typedef struct {
 	uint32_t time[NUM_PINS_PER_PORT][NUM_PORTS];
 	uint32_t time_remaining[NUM_PINS_PER_PORT][NUM_PORTS];
 
-	bool interrupt_callback[NUM_PORTS];
+	uint8_t interrupt_callback_mask[NUM_PORTS];
+	uint8_t interrupt_callback_value[NUM_PORTS];
 	bool interrupt_edge;
 } BrickContext;
 
