@@ -31,3 +31,7 @@
 2014-02-20: 2.0.5 (43b52fa)
 - Fix direction_mask return of get_port_configuration and use correct internal
   register in set_selected_values
+
+2016-06-03: 2.0.6 (<unknown>)
+- Fix edge count pin direction check for pin A2
+- Fix race condition in interrupt detection that resulted in missed interrupts
