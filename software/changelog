@@ -32,6 +32,6 @@
 - Fix direction_mask return of get_port_configuration and use correct internal
   register in set_selected_values
 
-2016-06-03: 2.0.6 (<unknown>)
+2016-06-03: 2.0.6 (d81d8c1)
 - Fix edge count pin direction check for pin A2
 - Fix race condition in interrupt detection that resulted in missed interrupts
