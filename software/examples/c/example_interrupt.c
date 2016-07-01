@@ -5,10 +5,11 @@
 
 #define HOST "localhost"
 #define PORT 4223
-#define UID "XYZ" // Change to your UID
+#define UID "XYZ" // Change XYZ to the UID of your IO-16 Bricklet
 
 // Callback function for interrupt callback
-void cb_interrupt(char port, uint8_t interrupt_mask, uint8_t value_mask, void *user_data) {
+void cb_interrupt(char port, uint8_t interrupt_mask, uint8_t value_mask,
+                  void *user_data) {
 	(void)user_data; // avoid unused parameter warning
 
 	printf("Port: %c\n", port);

@@ -2,7 +2,7 @@ var Tinkerforge = require('tinkerforge');
 
 var HOST = 'localhost';
 var PORT = 4223;
-var UID = 'XYZ'; // Change to your UID
+var UID = 'XYZ'; // Change XYZ to the UID of your IO-16 Bricklet
 
 var ipcon = new Tinkerforge.IPConnection(); // Create IP connection
 var io = new Tinkerforge.BrickletIO16(UID, ipcon); // Create device object

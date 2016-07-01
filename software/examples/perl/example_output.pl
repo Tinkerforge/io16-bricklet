@@ -5,7 +5,7 @@ use Tinkerforge::BrickletIO16;
 
 use constant HOST => 'localhost';
 use constant PORT => 4223;
-use constant UID => 'XYZ'; # Change to your UID
+use constant UID => 'XYZ'; # Change XYZ to the UID of your IO-16 Bricklet
 
 my $ipcon = Tinkerforge::IPConnection->new(); # Create IP connection
 my $io = Tinkerforge::BrickletIO16->new(&UID, $ipcon); # Create device object

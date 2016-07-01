@@ -8,7 +8,7 @@ include Tinkerforge
 
 HOST = 'localhost'
 PORT = 4223
-UID = 'XYZ' # Change to your UID
+UID = 'XYZ' # Change XYZ to the UID of your IO-16 Bricklet
 
 ipcon = IPConnection.new # Create IP connection
 io = BrickletIO16.new UID, ipcon # Create device object
@@ -17,7 +17,8 @@ ipcon.connect HOST, PORT # Connect to brickd
 # Don't use device before ipcon is connected
 
 # Register interrupt callback
-io.register_callback(BrickletIO16::CALLBACK_INTERRUPT) do |port, interrupt_mask, value_mask|
+io.register_callback(BrickletIO16::CALLBACK_INTERRUPT) do |port, interrupt_mask, \
+                                                           value_mask|
   puts "Port: #{port}"
   puts "Interrupt Mask: #{'%08b' % interrupt_mask}"
   puts "Value Mask: #{'%08b' % value_mask}"

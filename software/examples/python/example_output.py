@@ -3,7 +3,7 @@
 
 HOST = "localhost"
 PORT = 4223
-UID = "XYZ" # Change to your UID
+UID = "XYZ" # Change XYZ to the UID of your IO-16 Bricklet
 
 from tinkerforge.ip_connection import IPConnection
 from tinkerforge.bricklet_io16 import BrickletIO16

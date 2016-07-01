@@ -12,22 +12,22 @@ type
     ipcon: TIPConnection;
     io: TBrickletIO16;
   public
-    procedure InterruptCB(sender: TBrickletIO16; const port: char; const interruptMask: byte;
-                          const valueMask: byte);
+    procedure InterruptCB(sender: TBrickletIO16; const port: char;
+                          const interruptMask: byte; const valueMask: byte);
     procedure Execute;
   end;
 
 const
   HOST = 'localhost';
   PORT = 4223;
-  UID = 'XYZ'; { Change to your UID }
+  UID = 'XYZ'; { Change XYZ to the UID of your IO-16 Bricklet }
 
 var
   e: TExample;
 
 { Callback procedure for interrupt callback }
-procedure TExample.InterruptCB(sender: TBrickletIO16; const port: char; const interruptMask: byte;
-                               const valueMask: byte);
+procedure TExample.InterruptCB(sender: TBrickletIO16; const port: char;
+                               const interruptMask: byte; const valueMask: byte);
 begin
   WriteLn(Format('Port: %c', [port]));
   WriteLn(Format('Interrupt Mask: %d', [interruptMask]));

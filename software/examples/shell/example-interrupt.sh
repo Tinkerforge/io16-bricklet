@@ -1,7 +1,7 @@
 #!/bin/sh
 # Connects to localhost:4223 by default, use --host and --port to change this
 
-uid=XYZ # Change to your UID
+uid=XYZ # Change XYZ to the UID of your IO-16 Bricklet
 
 # Handle incoming interrupt callbacks
 tinkerforge dispatch io16-bricklet $uid interrupt &

@@ -4,11 +4,11 @@ Imports Tinkerforge
 Module ExampleInterrupt
     Const HOST As String = "localhost"
     Const PORT As Integer = 4223
-    Const UID As String = "XYZ" ' Change to your UID
+    Const UID As String = "XYZ" ' Change XYZ to the UID of your IO-16 Bricklet
 
     ' Callback subroutine for interrupt callback
-    Sub InterruptCB(ByVal sender As BrickletIO16, ByVal port As Char, ByVal interruptMask As Byte, _
-                    ByVal valueMask As Byte)
+    Sub InterruptCB(ByVal sender As BrickletIO16, ByVal port As Char, _
+                    ByVal interruptMask As Byte, ByVal valueMask As Byte)
         Console.WriteLine("Port: " + port)
         Console.WriteLine("Interrupt Mask: " + Convert.ToString(interruptMask, 2))
         Console.WriteLine("Value Mask: " + Convert.ToString(valueMask, 2))
