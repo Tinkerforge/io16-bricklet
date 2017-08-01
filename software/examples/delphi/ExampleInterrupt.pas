@@ -29,7 +29,7 @@ var
 procedure TExample.InterruptCB(sender: TBrickletIO16; const port: char;
                                const interruptMask: byte; const valueMask: byte);
 begin
-  WriteLn(Format('Port: %c', [port]));
+  WriteLn(Format('Port: %s', [port]));
   WriteLn(Format('Interrupt Mask: %d', [interruptMask]));
   WriteLn(Format('Value Mask: %d', [valueMask]));
   WriteLn('');
