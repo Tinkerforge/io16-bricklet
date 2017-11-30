@@ -11,10 +11,12 @@ io=NETNew["Tinkerforge.BrickletIO16",uid,ipcon]
 ipcon@Connect[host,port]
 
 (*Set pin 0 on port A to output low*)
-io@SetPortConfiguration[ToCharacterCode["a"][[1]],FromDigits[{0,0,0,0,0,0,0,1},2],ToCharacterCode["o"][[1]],False]
+io@SetPortConfiguration[ToCharacterCode["a"][[1]],FromDigits[{0,0,0,0,0,0,0,1},2],
+                        ToCharacterCode["o"][[1]],False]
 
 (*Set pin 0 and 7 on port B to output high*)
-io@SetPortConfiguration[ToCharacterCode["b"][[1]],FromDigits[{1,0,0,0,0,0,0,1},2],ToCharacterCode["o"][[1]],True]
+io@SetPortConfiguration[ToCharacterCode["b"][[1]],FromDigits[{1,0,0,0,0,0,0,1},2],
+                        ToCharacterCode["o"][[1]],True]
 
 (*Clean up*)
 ipcon@Disconnect[]
