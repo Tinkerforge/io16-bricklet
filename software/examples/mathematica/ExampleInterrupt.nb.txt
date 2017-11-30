@@ -18,7 +18,7 @@ InterruptCB[sender_,port_,interruptMask_,valueMask_]:=
   Print["Value Mask: "<>StringJoin[Map[ToString,IntegerDigits[valueMask,2,8]]]]
  ]
 
-AddEventHandler[io@Interrupt,InterruptCB]
+AddEventHandler[io@InterruptCallback,InterruptCB]
 
 (*Enable interrupt on pin 2 of port A*)
 io@SetPortInterrupt[ToCharacterCode["a"][[1]],FromDigits[{0,0,0,0,0,1,0,0},2]]
