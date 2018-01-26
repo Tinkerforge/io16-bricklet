@@ -30,7 +30,7 @@ int main(void) {
 		return 1;
 	}
 
-	printf("Value Mask (Port A): %d\n", value_mask);
+	printf("Value Mask (Port A): %u\n", value_mask);
 
 	printf("Press key to exit\n");
 	getchar();
