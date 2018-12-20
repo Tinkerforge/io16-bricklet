@@ -1,6 +1,8 @@
-use std::{error::Error, io};
+use std::{io, error::Error};
 
-use tinkerforge::{io16_bricklet::*, ip_connection::IpConnection};
+use tinkerforge::{ip_connection::IpConnection, 
+                  io16_bricklet::*};
+
 
 const HOST: &str = "localhost";
 const PORT: u16 = 4223;
@@ -11,13 +13,13 @@ fn main() -> Result<(), Box<dyn Error>> {
     let io = Io16Bricklet::new(UID, &ipcon); // Create device object.
 
     ipcon.connect((HOST, PORT)).recv()??; // Connect to brickd.
-                                          // Don't use device before ipcon is connected.
+    // Don't use device before ipcon is connected.
 
-    // Set pin 0 on port A to output low
-    io.set_port_configuration('a', 1 << 0, 'o', false);
+		// Set pin 0 on port A to output low
+		io.set_port_configuration('a', 1 << 0, 'o', false);
 
-    // Set pin 0 and 7 on port B to output high
-    io.set_port_configuration('b', (1 << 0) | (1 << 7), 'o', true);
+		// Set pin 0 and 7 on port B to output high
+		io.set_port_configuration('b', (1 << 0) | (1 << 7), 'o', true);
 
     println!("Press enter to exit.");
     let mut _input = String::new();
