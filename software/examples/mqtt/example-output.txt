@@ -3,5 +3,6 @@
 setup:
 	# Set pin 0 on port A to output low: 1 << 0 = 1
 	publish '{"port": "a", "selection_mask": 1, "direction": "out", "value": false}' to tinkerforge/request/io16_bricklet/XYZ/set_port_configuration 
+	
 	# Set pin 0 and 7 on port B to output high: (1 << 0) | (1 << 7) = 129
 	publish '{"port": "b", "selection_mask": 129, "direction": "out", "value": true}' to tinkerforge/request/io16_bricklet/XYZ/set_port_configuration 

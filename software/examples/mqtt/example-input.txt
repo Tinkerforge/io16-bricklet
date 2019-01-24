@@ -2,5 +2,5 @@
 
 setup:
 	# Get current value from port A as bitmask
-	subscribe to tinkerforge/response/io16/XYZ/get_port
+	subscribe to tinkerforge/response/io16_bricklet/XYZ/get_port
 	publish '{ "port": "a"}' to tinkerforge/request/io16_bricklet/XYZ/get_port 
