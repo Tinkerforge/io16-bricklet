@@ -21,5 +21,5 @@ if __name__ == "__main__":
     # Set pin 0 and 7 on port B to output high
     io.set_port_configuration("b", (1 << 0) | (1 << 7), "o", True)
 
-    raw_input("Press key to exit\n") # Use input() in Python 3
+    input("Press key to exit\n") # Use raw_input() in Python 2
     ipcon.disconnect()

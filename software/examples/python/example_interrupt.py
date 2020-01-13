@@ -28,5 +28,5 @@ if __name__ == "__main__":
     # Enable interrupt on pin 2 of port A
     io.set_port_interrupt("a", 1 << 2)
 
-    raw_input("Press key to exit\n") # Use input() in Python 3
+    input("Press key to exit\n") # Use raw_input() in Python 2
     ipcon.disconnect()
