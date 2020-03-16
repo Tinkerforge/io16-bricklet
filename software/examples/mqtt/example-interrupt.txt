@@ -6,4 +6,4 @@ setup:
 	publish '{"register": true}' to tinkerforge/register/io16_bricklet/XYZ/interrupt # Register interrupt callback
 
 	# Enable interrupt on pin 2 of port A: 1 << 2 = 4
-	publish '{"port": "a", "interrupt_mask": 4}' to tinkerforge/request/io16_bricklet/XYZ/set_port_interrupt 
+	publish '{"port": "a", "interrupt_mask": 4}' to tinkerforge/request/io16_bricklet/XYZ/set_port_interrupt
