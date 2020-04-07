@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     });
 
     // Enable interrupt on pin 2 of port A
-    io.set_port_interrupt('a', 1 << 2);
+    io.set_port_interrupt('a', 1 << 2).recv()?;
 
     println!("Press enter to exit.");
     let mut _input = String::new();

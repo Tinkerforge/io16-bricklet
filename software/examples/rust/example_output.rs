@@ -14,10 +14,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                                           // Don't use device before ipcon is connected.
 
     // Set pin 0 on port A to output low
-    io.set_port_configuration('a', 1 << 0, 'o', false);
+    io.set_port_configuration('a', 1 << 0, 'o', false).recv()?;
 
     // Set pin 0 and 7 on port B to output high
-    io.set_port_configuration('b', (1 << 0) | (1 << 7), 'o', true);
+    io.set_port_configuration('b', (1 << 0) | (1 << 7), 'o', true).recv()?;
 
     println!("Press enter to exit.");
     let mut _input = String::new();
