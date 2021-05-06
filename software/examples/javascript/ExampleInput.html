@@ -43,8 +43,8 @@
                     function (connectReason) {
                         // Get current value from port A as bitmask
                         io.getPort('a',
-                            function (valueMask) {
-                                textArea.value += 'Value Mask (Port A): ' + valueMask.toString(2) + '\n';
+                            function (valueMaskA) {
+                                textArea.value += 'Value Mask (Port A): ' + valueMaskA.toString(2) + '\n';
                             },
                             function (error) {
                                 textArea.value += 'Error: ' + error + '\n';
@@ -53,8 +53,8 @@
 
                         // Get current value from port B as bitmask
                         io.getPort('b',
-                            function (valueMask) {
-                                textArea.value += 'Value Mask (Port B): ' + valueMask.toString(2) + '\n';
+                            function (valueMaskB) {
+                                textArea.value += 'Value Mask (Port B): ' + valueMaskB.toString(2) + '\n';
                             },
                             function (error) {
                                 textArea.value += 'Error: ' + error + '\n';

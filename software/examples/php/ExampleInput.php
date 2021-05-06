@@ -17,12 +17,12 @@ $ipcon->connect(HOST, PORT); // Connect to brickd
 // Don't use device before ipcon is connected
 
 // Get current value from port A as bitmask
-$value_mask = $io->getPort('a');
-echo "Value Mask (Port A): " . sprintf("%08b", $value_mask) . "\n";
+$value_mask_a = $io->getPort('a');
+echo "Value Mask (Port A): " . sprintf("%08b", $value_mask_a) . "\n";
 
 // Get current value from port B as bitmask
-$value_mask = $io->getPort('b');
-echo "Value Mask (Port B): " . sprintf("%08b", $value_mask) . "\n";
+$value_mask_b = $io->getPort('b');
+echo "Value Mask (Port B): " . sprintf("%08b", $value_mask_b) . "\n";
 
 echo "Press key to exit\n";
 fgetc(fopen('php://stdin', 'r'));

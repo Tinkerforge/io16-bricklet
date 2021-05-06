@@ -18,12 +18,12 @@ public class ExampleInput {
 		// Don't use device before ipcon is connected
 
 		// Get current value from port A as bitmask
-		short valueMask = io.getPort('a'); // Can throw com.tinkerforge.TimeoutException
-		System.out.println("Value Mask (Port A): " + Integer.toBinaryString(valueMask));
+		short valueMaskA = io.getPort('a'); // Can throw com.tinkerforge.TimeoutException
+		System.out.println("Value Mask (Port A): " + Integer.toBinaryString(valueMaskA));
 
 		// Get current value from port B as bitmask
-		short valueMask = io.getPort('b'); // Can throw com.tinkerforge.TimeoutException
-		System.out.println("Value Mask (Port B): " + Integer.toBinaryString(valueMask));
+		short valueMaskB = io.getPort('b'); // Can throw com.tinkerforge.TimeoutException
+		System.out.println("Value Mask (Port B): " + Integer.toBinaryString(valueMaskB));
 
 		System.out.println("Press key to exit"); System.in.read();
 		ipcon.disconnect();

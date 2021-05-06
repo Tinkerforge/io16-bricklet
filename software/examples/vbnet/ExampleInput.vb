@@ -14,12 +14,12 @@ Module ExampleInput
         ' Don't use device before ipcon is connected
 
         ' Get current value from port A as bitmask
-        Dim valueMask As Byte = io.GetPort("a"C)
-        Console.WriteLine("Value Mask (Port A): " + Convert.ToString(valueMask, 2))
+        Dim valueMaskA As Byte = io.GetPort("a"C)
+        Console.WriteLine("Value Mask (Port A): " + Convert.ToString(valueMaskA, 2))
 
         ' Get current value from port B as bitmask
-        Dim valueMask As Byte = io.GetPort("b"C)
-        Console.WriteLine("Value Mask (Port B): " + Convert.ToString(valueMask, 2))
+        Dim valueMaskB As Byte = io.GetPort("b"C)
+        Console.WriteLine("Value Mask (Port B): " + Convert.ToString(valueMaskB, 2))
 
         Console.WriteLine("Press key to exit")
         Console.ReadLine()

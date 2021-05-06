@@ -13,12 +13,12 @@ function matlab_example_input()
     % Don't use device before ipcon is connected
 
     % Get current value from port A as bitmask
-    valueMask = io.getPort('a');
-    fprintf('Value Mask (Port A): %s\n', dec2bin(valueMask));
+    valueMaskA = io.getPort('a');
+    fprintf('Value Mask (Port A): %s\n', dec2bin(valueMaskA));
 
     % Get current value from port B as bitmask
-    valueMask = io.getPort('b');
-    fprintf('Value Mask (Port B): %s\n', dec2bin(valueMask));
+    valueMaskB = io.getPort('b');
+    fprintf('Value Mask (Port B): %s\n', dec2bin(valueMaskB));
 
     input('Press key to exit\n', 's');
     ipcon.disconnect();

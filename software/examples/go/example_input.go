@@ -19,12 +19,12 @@ func main() {
 	// Don't use device before ipcon is connected.
 
 	// Get current value from port A as bitmask.
-	valueMask, _ := io.GetPort('a')
-	fmt.Printf("Value Mask (Port A): %b\n", valueMask)
+	valueMaskA, _ := io.GetPort('a')
+	fmt.Printf("Value Mask (Port A): %b\n", valueMaskA)
 
 	// Get current value from port B as bitmask.
-	valueMask, _ := io.GetPort('b')
-	fmt.Printf("Value Mask (Port B): %b\n", valueMask)
+	valueMaskB, _ := io.GetPort('b')
+	fmt.Printf("Value Mask (Port B): %b\n", valueMaskB)
 
 	fmt.Print("Press enter to exit.")
 	fmt.Scanln()

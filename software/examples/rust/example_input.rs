@@ -14,12 +14,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                                           // Don't use device before ipcon is connected.
 
     // Get current value from port A as bitmask.
-    let value_mask = io.get_port('a').recv()?;
-    println!("Value Mask (Port A): {:b}", value_mask);
+    let value_mask_a = io.get_port('a').recv()?;
+    println!("Value Mask (Port A): {:b}", value_mask_a);
 
     // Get current value from port B as bitmask.
-    let value_mask = io.get_port('b').recv()?;
-    println!("Value Mask (Port B): {:b}", value_mask);
+    let value_mask_b = io.get_port('b').recv()?;
+    println!("Value Mask (Port B): {:b}", value_mask_b);
 
     println!("Press enter to exit.");
     let mut _input = String::new();

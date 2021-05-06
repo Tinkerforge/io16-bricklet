@@ -17,12 +17,12 @@ ipcon.connect HOST, PORT # Connect to brickd
 # Don't use device before ipcon is connected
 
 # Get current value from port A as bitmask
-value_mask = io.get_port 'a'
-puts "Value Mask (Port A): #{'%08b' % value_mask}"
+value_mask_a = io.get_port 'a'
+puts "Value Mask (Port A): #{'%08b' % value_mask_a}"
 
 # Get current value from port B as bitmask
-value_mask = io.get_port 'b'
-puts "Value Mask (Port B): #{'%08b' % value_mask}"
+value_mask_b = io.get_port 'b'
+puts "Value Mask (Port B): #{'%08b' % value_mask_b}"
 
 puts 'Press key to exit'
 $stdin.gets
