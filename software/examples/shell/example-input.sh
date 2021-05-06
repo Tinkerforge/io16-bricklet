@@ -5,3 +5,6 @@ uid=XYZ # Change XYZ to the UID of your IO-16 Bricklet
 
 # Get current value from port A as bitmask
 tinkerforge call io16-bricklet $uid get-port "a"
+
+# Get current value from port B as bitmask
+tinkerforge call io16-bricklet $uid get-port "b"

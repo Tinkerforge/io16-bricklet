@@ -20,6 +20,10 @@ ipcon.connect HOST, PORT # Connect to brickd
 value_mask = io.get_port 'a'
 puts "Value Mask (Port A): #{'%08b' % value_mask}"
 
+# Get current value from port B as bitmask
+value_mask = io.get_port 'b'
+puts "Value Mask (Port B): #{'%08b' % value_mask}"
+
 puts 'Press key to exit'
 $stdin.gets
 ipcon.disconnect

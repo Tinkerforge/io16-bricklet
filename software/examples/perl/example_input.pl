@@ -18,6 +18,10 @@ $ipcon->connect(&HOST, &PORT); # Connect to brickd
 my $value_mask = $io->get_port('a');
 print "Value Mask (Port A): " . sprintf('%08b', $value_mask) . "\n";
 
+# Get current value from port B as bitmask
+my $value_mask = $io->get_port('b');
+print "Value Mask (Port B): " . sprintf('%08b', $value_mask) . "\n";
+
 print "Press key to exit\n";
 <STDIN>;
 $ipcon->disconnect();

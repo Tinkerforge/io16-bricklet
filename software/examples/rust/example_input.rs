@@ -17,6 +17,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     let value_mask = io.get_port('a').recv()?;
     println!("Value Mask (Port A): {:b}", value_mask);
 
+    // Get current value from port B as bitmask.
+    let value_mask = io.get_port('b').recv()?;
+    println!("Value Mask (Port B): {:b}", value_mask);
+
     println!("Press enter to exit.");
     let mut _input = String::new();
     io::stdin().read_line(&mut _input)?;

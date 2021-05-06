@@ -22,6 +22,10 @@ func main() {
 	valueMask, _ := io.GetPort('a')
 	fmt.Printf("Value Mask (Port A): %b\n", valueMask)
 
+	// Get current value from port B as bitmask.
+	valueMask, _ := io.GetPort('b')
+	fmt.Printf("Value Mask (Port B): %b\n", valueMask)
+
 	fmt.Print("Press enter to exit.")
 	fmt.Scanln()
 }

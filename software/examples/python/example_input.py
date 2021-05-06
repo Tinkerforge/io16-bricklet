@@ -19,5 +19,9 @@ if __name__ == "__main__":
     value_mask = io.get_port("a")
     print("Value Mask (Port A): " + format(value_mask, "08b"))
 
+    # Get current value from port B as bitmask
+    value_mask = io.get_port("b")
+    print("Value Mask (Port B): " + format(value_mask, "08b"))
+
     input("Press key to exit\n") # Use raw_input() in Python 2
     ipcon.disconnect()

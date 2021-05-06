@@ -13,6 +13,9 @@ ipcon@Connect[host,port]
 (*Get current value from port A as bitmask*)
 Print["Value Mask (Port A): "<>StringJoin[Map[ToString,IntegerDigits[io@GetPort[ToCharacterCode["a"][[1]]],2,8]]]]
 
+(*Get current value from port B as bitmask*)
+Print["Value Mask (Port B): "<>StringJoin[Map[ToString,IntegerDigits[io@GetPort[ToCharacterCode["b"][[1]]],2,8]]]]
+
 (*Clean up*)
 ipcon@Disconnect[]
 ReleaseNETObject[io]

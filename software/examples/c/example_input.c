@@ -32,6 +32,15 @@ int main(void) {
 
 	printf("Value Mask (Port A): %u\n", value_mask);
 
+	// Get current value from port B as bitmask
+	uint8_t value_mask;
+	if(io16_get_port(&io, 'b', &value_mask) < 0) {
+		fprintf(stderr, "Could not get value from port B as bitmask, probably timeout\n");
+		return 1;
+	}
+
+	printf("Value Mask (Port B): %u\n", value_mask);
+
 	printf("Press key to exit\n");
 	getchar();
 	io16_destroy(&io);

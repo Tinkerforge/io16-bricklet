@@ -22,6 +22,10 @@ Notebook[{
    RowBox[{"Print", "[", RowBox[{"\"\<Value Mask (Port A): \>\"", "<>", RowBox[{"StringJoin", "[", RowBox[{"Map", "[", RowBox[{"ToString", ",", RowBox[{"IntegerDigits", "[", RowBox[{RowBox[{"io", "@", RowBox[{"GetPort", "[", RowBox[{RowBox[{"ToCharacterCode", "[", "\"\<a\>\"", "]"}], "[", RowBox[{"[", "1", "]"}], "]"}], "]"}]}], ",", "2", ",", "8"}], "]"}]}], "]"}], "]"}]}], "]"}],
    RowBox[{"
 "}],
+   RowBox[{"(*", "Get current value from port B as bitmask", "*)"}],
+   RowBox[{"Print", "[", RowBox[{"\"\<Value Mask (Port B): \>\"", "<>", RowBox[{"StringJoin", "[", RowBox[{"Map", "[", RowBox[{"ToString", ",", RowBox[{"IntegerDigits", "[", RowBox[{RowBox[{"io", "@", RowBox[{"GetPort", "[", RowBox[{RowBox[{"ToCharacterCode", "[", "\"\<b\>\"", "]"}], "[", RowBox[{"[", "1", "]"}], "]"}], "]"}]}], ",", "2", ",", "8"}], "]"}]}], "]"}], "]"}]}], "]"}],
+   RowBox[{"
+"}],
    RowBox[{"(*", "Clean up", "*)"}],
    RowBox[{"ipcon", "@", RowBox[{"Disconnect", "[", "]"}]}],
    RowBox[{"ReleaseNETObject", "[", "io", "]"}],

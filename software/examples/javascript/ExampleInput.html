@@ -50,6 +50,16 @@
                                 textArea.value += 'Error: ' + error + '\n';
                             }
                         );
+
+                        // Get current value from port B as bitmask
+                        io.getPort('b',
+                            function (valueMask) {
+                                textArea.value += 'Value Mask (Port B): ' + valueMask.toString(2) + '\n';
+                            },
+                            function (error) {
+                                textArea.value += 'Error: ' + error + '\n';
+                            }
+                        );
                     }
                 );
             }

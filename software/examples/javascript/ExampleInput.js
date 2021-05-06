@@ -25,6 +25,16 @@ ipcon.on(Tinkerforge.IPConnection.CALLBACK_CONNECTED,
                 console.log('Error: ' + error);
             }
         );
+
+        // Get current value from port B as bitmask
+        io.getPort('b',
+            function (valueMask) {
+                console.log('Value Mask (Port B): ' + valueMask.toString(2));
+            },
+            function (error) {
+                console.log('Error: ' + error);
+            }
+        );
     }
 );
 

@@ -21,6 +21,10 @@ public class ExampleInput {
 		short valueMask = io.getPort('a'); // Can throw com.tinkerforge.TimeoutException
 		System.out.println("Value Mask (Port A): " + Integer.toBinaryString(valueMask));
 
+		// Get current value from port B as bitmask
+		short valueMask = io.getPort('b'); // Can throw com.tinkerforge.TimeoutException
+		System.out.println("Value Mask (Port B): " + Integer.toBinaryString(valueMask));
+
 		System.out.println("Press key to exit"); System.in.read();
 		ipcon.disconnect();
 	}

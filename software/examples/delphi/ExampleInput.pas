@@ -24,7 +24,7 @@ var
   e: TExample;
 
 procedure TExample.Execute;
-var valueMask: byte;
+var valueMask, valueMask: byte;
 begin
   { Create IP connection }
   ipcon := TIPConnection.Create;
@@ -39,6 +39,10 @@ begin
   { Get current value from port A as bitmask }
   valueMask := io.GetPort('a');
   WriteLn(Format('Value Mask (Port A): %d', [valueMask]));
+
+  { Get current value from port B as bitmask }
+  valueMask := io.GetPort('b');
+  WriteLn(Format('Value Mask (Port B): %d', [valueMask]));
 
   WriteLn('Press key to exit');
   ReadLn;

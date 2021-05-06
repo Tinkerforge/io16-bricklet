@@ -15,6 +15,10 @@ function octave_example_input()
     valueMask = io.getPort("a");
     fprintf("Value Mask (Port A): %s\n", dec2bin(java2int(valueMask)));
 
+    % Get current value from port B as bitmask
+    valueMask = io.getPort("b");
+    fprintf("Value Mask (Port B): %s\n", dec2bin(java2int(valueMask)));
+
     input("Press key to exit\n", "s");
     ipcon.disconnect();
 end

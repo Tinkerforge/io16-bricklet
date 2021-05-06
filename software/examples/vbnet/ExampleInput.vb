@@ -17,6 +17,10 @@ Module ExampleInput
         Dim valueMask As Byte = io.GetPort("a"C)
         Console.WriteLine("Value Mask (Port A): " + Convert.ToString(valueMask, 2))
 
+        ' Get current value from port B as bitmask
+        Dim valueMask As Byte = io.GetPort("b"C)
+        Console.WriteLine("Value Mask (Port B): " + Convert.ToString(valueMask, 2))
+
         Console.WriteLine("Press key to exit")
         Console.ReadLine()
         ipcon.Disconnect()

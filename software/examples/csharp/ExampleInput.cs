@@ -19,6 +19,10 @@ class Example
 		byte valueMask = io.GetPort('a');
 		Console.WriteLine("Value Mask (Port A): " + Convert.ToString(valueMask, 2));
 
+		// Get current value from port B as bitmask
+		byte valueMask = io.GetPort('b');
+		Console.WriteLine("Value Mask (Port B): " + Convert.ToString(valueMask, 2));
+
 		Console.WriteLine("Press enter to exit");
 		Console.ReadLine();
 		ipcon.Disconnect();
